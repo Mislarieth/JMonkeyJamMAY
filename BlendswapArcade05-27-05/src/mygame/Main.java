@@ -4,12 +4,14 @@ import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.control.RigidBodyControl;
+import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
+import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector2f;
@@ -153,7 +155,7 @@ public class Main extends SimpleApplication implements ActionListener {
             rotateR.multLocal(viewDirection);
         }
         physicsCharacter.setViewDirection(viewDirection);
-        fpsText.setText("Touch da ground = " + physicsCharacter.isOnGround());
+       // fpsText.setText("Touch da ground = " + physicsCharacter.isOnGround());
         if (!lockView) {
             cam.lookAt(characterNode.getWorldTranslation().add(new Vector3f(0, 2, 0)), Vector3f.UNIT_Y);
         }
@@ -239,7 +241,7 @@ public class Main extends SimpleApplication implements ActionListener {
             camNode.setEnabled(lockView);
         }else if (binding.equals("GenTest")) {
             if (value) {
-                generateWindows(1,6,3,10);
+                generateWindows(5,6,3,10);
             } else {
                
             }
@@ -276,7 +278,7 @@ public class Main extends SimpleApplication implements ActionListener {
         inputManager.addMapping("Lock View",
                 new KeyTrigger(KeyInput.KEY_RETURN));
         inputManager.addMapping("GenTest",
-                new KeyTrigger(KeyInput.KEY_C));
+                new KeyTrigger(KeyInput.KEY_V));
         inputManager.addListener(this, "Strafe Left", "Strafe Right");
         inputManager.addListener(this, "Rotate Left", "Rotate Right");
         inputManager.addListener(this, "Walk Forward", "Walk Backward");
@@ -298,38 +300,49 @@ public class Main extends SimpleApplication implements ActionListener {
         int spaceX=3;
         int xVar=1;
         int zVar=1;
-        Box box = new Box(1,0.25f,1);
+        Box box=new Box();
         Material mat1 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        //mat1.setBoolean("UseMaterialColors", true);
+        mat1.setColor("Color", new ColorRGBA(0.5764706f,0.42352942f,0.41960785f,1));
+        RigidBodyControl rbc = new RigidBodyControl(0);
+        /* A colored lit cube. Needs light source! */ 
         
         
+         //windowsNode.removeControl(RigidBodyControl.class);
+         windowsNode.detachAllChildren();
+         
         
-        windowsNode.removeControl(RigidBodyControl.class);
-        windowsNode.detachAllChildren();
         
         if(numSide==1){
             xVar=1;
             zVar=0;
             startPoint.set(2,1,10);
+            box.updateGeometry(Vector3f.ZERO, 1, 0.25f, 2);
         }else if(numSide==2){
             xVar=0;
             zVar=-1;
             startPoint.set(10,1,8);
+            box.updateGeometry(Vector3f.ZERO, 2, 0.25f, 1);
         }else if(numSide==3){
             xVar=0;
             zVar=-1;
             startPoint.set(10,1,-2);
+            box.updateGeometry(Vector3f.ZERO, 2, 0.25f, 1);
         }else if(numSide==4){
             xVar=-1;
             zVar=0;
             startPoint.set(8,1,-10);
+            box.updateGeometry(Vector3f.ZERO, 1, 0.25f, 2);
         }else if(numSide==5){
             xVar=-1;
             zVar=0;
             startPoint.set(-2,1,-10);
+            box.updateGeometry(Vector3f.ZERO, 1, 0.25f, 2);
         }else if(numSide==6){
             xVar=0;
             zVar=1;
             startPoint.set(-10,1,-8);
+            box.updateGeometry(Vector3f.ZERO, 2, 0.25f, 1);
         }
         
         
@@ -348,7 +361,13 @@ public class Main extends SimpleApplication implements ActionListener {
             
             
         }
-        windowsNode.addControl(new RigidBodyControl(0));
+        rbc.setCollisionShape(CollisionShapeFactory.createMeshShape((Node) windowsNode ));
+        if(windowsNode.getControl(RigidBodyControl.class)!=null){
+            
+            getPhysicsSpace().remove(windowsNode);
+            windowsNode.removeControl(RigidBodyControl.class);
+        }
+        windowsNode.addControl(rbc);
         getPhysicsSpace().add(windowsNode);
         
         /*2,1,10   +++x
