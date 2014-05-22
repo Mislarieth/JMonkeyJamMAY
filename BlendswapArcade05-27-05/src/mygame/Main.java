@@ -117,6 +117,7 @@ public class Main extends SimpleApplication implements ActionListener {
         characterNode.attachChild(camNode);
         // Disable by default, can be enabled via keyboard shortcut
         camNode.setEnabled(false);
+        flyCam.setMoveSpeed(20);
         //bulletAppState.setDebugEnabled(true);
     }
 
@@ -156,9 +157,9 @@ public class Main extends SimpleApplication implements ActionListener {
         }
         physicsCharacter.setViewDirection(viewDirection);
        // fpsText.setText("Touch da ground = " + physicsCharacter.isOnGround());
-        if (!lockView) {
+       /* if (!lockView) {
             cam.lookAt(characterNode.getWorldTranslation().add(new Vector3f(0, 2, 0)), Vector3f.UNIT_Y);
-        }
+        }*/
     }
 
     private void setupPlanet() {
@@ -241,7 +242,7 @@ public class Main extends SimpleApplication implements ActionListener {
             camNode.setEnabled(lockView);
         }else if (binding.equals("GenTest")) {
             if (value) {
-                generateWindows(5,6,3,10);
+                generateWindows(5,10);
             } else {
                
             }
@@ -291,7 +292,7 @@ public class Main extends SimpleApplication implements ActionListener {
     }
     
     
-    public void generateWindows(int numSide, int rows, int numPerRows, int numWindows){
+    public void generateWindows(int numSide, int numWindows){
         Vector3f startPoint=new Vector3f();
         ArrayList used = new ArrayList();
         Vector2f coord;
@@ -301,6 +302,7 @@ public class Main extends SimpleApplication implements ActionListener {
         int xVar=1;
         int zVar=1;
         Box box=new Box();
+        int rows=0,numPerRows=3;
         Material mat1 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
         //mat1.setBoolean("UseMaterialColors", true);
         mat1.setColor("Color", new ColorRGBA(0.5764706f,0.42352942f,0.41960785f,1));
@@ -314,31 +316,49 @@ public class Main extends SimpleApplication implements ActionListener {
         
         
         if(numSide==1){
+            //2,1,10   +++x
+            rows=6;
+            numPerRows=3;
             xVar=1;
             zVar=0;
             startPoint.set(2,1,10);
             box.updateGeometry(Vector3f.ZERO, 1, 0.25f, 2);
         }else if(numSide==2){
+            //10,1,8   ---z
+            rows=6;
+            numPerRows=3;
             xVar=0;
             zVar=-1;
             startPoint.set(10,1,8);
             box.updateGeometry(Vector3f.ZERO, 2, 0.25f, 1);
         }else if(numSide==3){
+            //[10.0, 1.0, -2.0] ---z
+            rows=9;
+            numPerRows=3;
             xVar=0;
             zVar=-1;
             startPoint.set(10,1,-2);
             box.updateGeometry(Vector3f.ZERO, 2, 0.25f, 1);
         }else if(numSide==4){
+            //[8.0, 1.0, -10.0] ---x
+            rows=9;
+            numPerRows=3;
             xVar=-1;
             zVar=0;
             startPoint.set(8,1,-10);
             box.updateGeometry(Vector3f.ZERO, 1, 0.25f, 2);
         }else if(numSide==5){
+            //[-2.0, 1.0, -10.0] ---x
+            rows=13;
+            numPerRows=3;
             xVar=-1;
             zVar=0;
             startPoint.set(-2,1,-10);
             box.updateGeometry(Vector3f.ZERO, 1, 0.25f, 2);
         }else if(numSide==6){
+            //[-10.0, 1.0, -8.0] +++z
+            rows=13;
+            numPerRows=3;
             xVar=0;
             zVar=1;
             startPoint.set(-10,1,-8);
@@ -369,18 +389,6 @@ public class Main extends SimpleApplication implements ActionListener {
         }
         windowsNode.addControl(rbc);
         getPhysicsSpace().add(windowsNode);
-        
-        /*2,1,10   +++x
-         * 10,1,8   ---z
-         * [10.0, 1.0, -2.0] ---z
-         * [8.0, 1.0, -10.0] ---x
-         * [-2.0, 1.0, -10.0] ---x
-         * [-10.0, 1.0, -8.0] +++z
-         */
-        
-        
-        
-        
-        
+      
     }
 }
