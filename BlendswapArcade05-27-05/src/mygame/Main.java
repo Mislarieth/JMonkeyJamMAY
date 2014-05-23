@@ -3,7 +3,6 @@ package mygame;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.control.GhostControl;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.input.KeyInput;
@@ -12,7 +11,6 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
-import com.jme3.material.RenderState;
 import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
@@ -24,15 +22,15 @@ import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.CameraNode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.Spatial;
 import com.jme3.scene.control.CameraControl.ControlDirection;
-import com.jme3.scene.control.Control;
 import com.jme3.scene.shape.Box;
 import com.jme3.system.AppSettings;
 import java.util.ArrayList;
 import java.util.Random;
+import mygame.controls.BabyDropperControl;
 import mygame.controls.BetterCharacterControl;
 import mygame.controls.CharacterAnimControl;
+import mygame.controls.CollisionDetector;
 
 /**
  * A walking physical character followed by a 3rd person camera. (No animation.)
@@ -44,7 +42,7 @@ public class Main extends SimpleApplication implements ActionListener {
     private BulletAppState bulletAppState;
     private BetterCharacterControl physicsCharacter;
     private CharacterAnimControl characterAnimControl;
-    private Node windowsNode, dirtyWindowsNode;
+    private Node windowsNode, dirtyWindowsNode,objectDropNode;
     private Node characterNode;
     private CameraNode camNode;
     boolean rotate = false;
@@ -73,15 +71,21 @@ public class Main extends SimpleApplication implements ActionListener {
         
         
         windowsNode=new Node();
+        windowsNode.setName("Windows Node");
         rootNode.attachChild(windowsNode);
         dirtyWindowsNode=new Node();
         rootNode.attachChild(dirtyWindowsNode);
+        objectDropNode=new Node();
+        rootNode.attachChild(objectDropNode);
         
         // activate physics
         bulletAppState = new BulletAppState();
         
         stateManager.attach(bulletAppState);
-
+        
+        CollisionDetector collisionAppState = new CollisionDetector(rootNode,getPhysicsSpace());
+        stateManager.attach(collisionAppState);
+        bulletAppState.getPhysicsSpace().addCollisionListener(collisionAppState);
         // init a physics test scene
         
         setupPlanet();
@@ -248,7 +252,7 @@ public class Main extends SimpleApplication implements ActionListener {
             camNode.setEnabled(lockView);
         }else if (binding.equals("GenTest")) {
             if (value) {
-                generateDirtyWindows(5,10);
+                generateSide(5,20,10,4);
             } else {
                
             }
@@ -298,6 +302,8 @@ public class Main extends SimpleApplication implements ActionListener {
     }
     
     
+    
+    ArrayList windowSillList=new ArrayList();
     public void generateWindows(int numSide, int numWindows){
         Vector3f startPoint=new Vector3f();
         ArrayList used = new ArrayList();
@@ -315,7 +321,7 @@ public class Main extends SimpleApplication implements ActionListener {
         RigidBodyControl rbc = new RigidBodyControl(0);
         /* A colored lit cube. Needs light source! */ 
         
-        
+        windowSillList.clear();
          //windowsNode.removeControl(RigidBodyControl.class);
          windowsNode.detachAllChildren();
          
@@ -378,12 +384,17 @@ public class Main extends SimpleApplication implements ActionListener {
            // while(used.contains(coord)){
            //     coord=new Vector2f(rand.nextInt(numPerRows),rand.nextInt(rows));
            // }
-            used.add(coord);
-            Vector3f pt= startPoint.add(new Vector3f(xVar*coord.getX()*spaceX,coord.getY()*spaceY,zVar*coord.getX()*spaceX));
-            Geometry windowSill = new Geometry("Window_"+numSide+"_"+coord.getY()+"_"+coord.getX(), box);
-            windowSill.setLocalTranslation(pt);
-            windowSill.setMaterial(mat1);
-            windowsNode.attachChild(windowSill);
+            
+            if(!windowSillList.contains(coord)){
+                windowSillList.add(coord);
+                used.add(coord);
+                Vector3f pt= startPoint.add(new Vector3f(xVar*coord.getX()*spaceX,coord.getY()*spaceY,zVar*coord.getX()*spaceX));
+                Geometry windowSill = new Geometry("Window_"+numSide+"_"+coord.getY()+"_"+coord.getX(), box);
+                windowSill.setLocalTranslation(pt);
+                windowSill.setMaterial(mat1);
+                windowsNode.attachChild(windowSill);
+            }
+            
             
             
         }
@@ -489,8 +500,107 @@ public class Main extends SimpleApplication implements ActionListener {
             
             dirtyWindowsNode.attachChild(dirtyWindow);
             
-            
-            System.out.println("Wlarus");
+        }
+      
+    }
+    public void generateSide(int sideNumber, int numLedge, int numDirtyWindows, int babyDropper){
+        generateWindows(sideNumber, numLedge);
+        generateDirtyWindows(sideNumber, numDirtyWindows);
+        generateObjectDropper(sideNumber, babyDropper);
+    }
+    public void generateObjectDropper(int numSide, int numWindows){
+        Vector3f animPoint=new Vector3f();
+        Vector3f objectDropPoint=new Vector3f();
+        Vector2f coord;
+        Random rand = new Random();
+        float spaceY=3.5f;
+        int spaceX=3;
+        int xVar=1;
+        int zVar=1;
+        int rows=0,numPerRows=3;
+        Box box=new Box(0.25f,0.25f,0.25f);
+        Material mat1 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat1.setColor("Color", ColorRGBA.Blue);
+        
+         //windowsNode.removeControl(RigidBodyControl.class);
+         objectDropNode.detachAllChildren();
+         
+        
+        
+        if(numSide==1){
+            //2,1,10   +++x
+            rows=6;
+            numPerRows=3;
+            xVar=1;
+            zVar=0;
+            animPoint.set(2,1.7f,10.001f);
+            objectDropPoint.set(2,1.7f,12);
+        }else if(numSide==2){
+            //10,1,8   ---z
+            rows=6;
+            numPerRows=3;
+            xVar=0;
+            zVar=-1;
+            animPoint.set(10.001f,1.7f,8);
+            objectDropPoint.set(12,1.7f,8f);
+        }else if(numSide==3){
+            //[10.0, 1.0, -2.0] ---z
+            rows=9;
+            numPerRows=3;
+            xVar=0;
+            zVar=-1;
+            animPoint.set(10.001f,1.7f,-2);
+            objectDropPoint.set(12,1.7f,-2);
+        }else if(numSide==4){
+            //[8.0, 1.0, -10.0] ---x
+            rows=9;
+            numPerRows=3;
+            xVar=-1;
+            zVar=0;
+            animPoint.set(8,1.7f,-9.999f);
+            objectDropPoint.set(8,1.7f,-8);
+        }else if(numSide==5){
+            //[-2.0, 1.0, -10.0] ---x
+            rows=13;
+            numPerRows=3;
+            xVar=-1;
+            zVar=0;
+            animPoint.set(-2,1.7f,-9.999f);
+            objectDropPoint.set(-2,1.7f,-12);
+        }else if(numSide==6){
+            //[-10.0, 1.0, -8.0] +++z
+            rows=13;
+            numPerRows=3;
+            xVar=0;
+            zVar=1;
+            animPoint.set(-9.999f,1.7f,-8);
+            objectDropPoint.set(-8,1.7f,-8);
+        }
+        
+        
+        
+        for(int i=0;i<numWindows;i++){
+            coord=new Vector2f(rand.nextInt(numPerRows),rand.nextInt(rows));
+           // while(used.contains(coord)){
+           //     coord=new Vector2f(rand.nextInt(numPerRows),rand.nextInt(rows));
+           // }
+            if(!windowSillList.contains(coord)){
+                Vector3f pt= animPoint.add(new Vector3f(xVar*coord.getX()*spaceX,coord.getY()*spaceY,zVar*coord.getX()*spaceX));
+                //Spatial dirtyWindow =  assetManager.loadModel("Models/dirtyWindow/dirtyWindow.j3o");
+                Vector3f dropPt= objectDropPoint.add(new Vector3f(xVar*coord.getX()*spaceX,coord.getY()*spaceY,zVar*coord.getX()*spaceX));
+                int dropTime=rand.nextInt(6)+1;
+
+                Geometry objectDropper = new Geometry("Window_"+numSide+"_"+coord.getY()+"_"+coord.getX(), box);
+                objectDropper.setLocalTranslation(pt);
+                objectDropper.setMaterial(mat1);
+
+                objectDropNode.attachChild(objectDropper);
+                BabyDropperControl bdc = new BabyDropperControl(assetManager,rootNode,getPhysicsSpace(),dropPt,dropTime);
+                objectDropper.addControl(bdc);
+                System.out.println(dropTime);
+            }else{
+                System.out.println("Bollocks.");
+            }
             
             
         }
