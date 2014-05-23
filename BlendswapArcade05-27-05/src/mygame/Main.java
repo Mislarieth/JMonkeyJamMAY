@@ -3,6 +3,7 @@ package mygame;
 import com.jme3.app.SimpleApplication;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
+import com.jme3.bullet.control.GhostControl;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.input.KeyInput;
@@ -11,15 +12,19 @@ import com.jme3.input.controls.KeyTrigger;
 import com.jme3.light.AmbientLight;
 import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
+import com.jme3.material.RenderState;
+import com.jme3.material.RenderState.BlendMode;
 import com.jme3.math.ColorRGBA;
 import com.jme3.math.FastMath;
 import com.jme3.math.Quaternion;
 import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
+import com.jme3.renderer.queue.RenderQueue;
 import com.jme3.scene.CameraNode;
 import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
+import com.jme3.scene.Spatial;
 import com.jme3.scene.control.CameraControl.ControlDirection;
 import com.jme3.scene.control.Control;
 import com.jme3.scene.shape.Box;
@@ -39,7 +44,7 @@ public class Main extends SimpleApplication implements ActionListener {
     private BulletAppState bulletAppState;
     private BetterCharacterControl physicsCharacter;
     private CharacterAnimControl characterAnimControl;
-    private Node windowsNode;
+    private Node windowsNode, dirtyWindowsNode;
     private Node characterNode;
     private CameraNode camNode;
     boolean rotate = false;
@@ -69,7 +74,8 @@ public class Main extends SimpleApplication implements ActionListener {
         
         windowsNode=new Node();
         rootNode.attachChild(windowsNode);
-        
+        dirtyWindowsNode=new Node();
+        rootNode.attachChild(dirtyWindowsNode);
         
         // activate physics
         bulletAppState = new BulletAppState();
@@ -242,7 +248,7 @@ public class Main extends SimpleApplication implements ActionListener {
             camNode.setEnabled(lockView);
         }else if (binding.equals("GenTest")) {
             if (value) {
-                generateWindows(5,10);
+                generateDirtyWindows(5,10);
             } else {
                
             }
@@ -389,6 +395,105 @@ public class Main extends SimpleApplication implements ActionListener {
         }
         windowsNode.addControl(rbc);
         getPhysicsSpace().add(windowsNode);
+      
+    }
+    public void generateDirtyWindows(int numSide, int numWindows){
+        Vector3f startPoint=new Vector3f();
+        Vector2f coord;
+        Random rand = new Random();
+        float spaceY=3.5f;
+        int spaceX=3;
+        int xVar=1;
+        int zVar=1;
+        int rows=0,numPerRows=3;
+        Box box=new Box(1,1,1);
+        Material mat1 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
+        mat1.setColor("Color", new ColorRGBA(0.5764706f,0.42352942f,0.41960785f,1));
+        mat1.setTexture("ColorMap", assetManager.loadTexture("Models/dirtyWindow/textures/DirtyWindow.png"));
+        mat1.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
+        
+        /* A colored lit cube. Needs light source! */ 
+        
+        
+         //windowsNode.removeControl(RigidBodyControl.class);
+         dirtyWindowsNode.detachAllChildren();
+         
+        
+        
+        if(numSide==1){
+            //2,1,10   +++x
+            rows=6;
+            numPerRows=3;
+            xVar=1;
+            zVar=0;
+            startPoint.set(2,1.7f,10.001f);
+            box.updateGeometry(Vector3f.ZERO, 0.99f, 0.7f, 0.1f);
+        }else if(numSide==2){
+            //10,1,8   ---z
+            rows=6;
+            numPerRows=3;
+            xVar=0;
+            zVar=-1;
+            startPoint.set(10.001f,1.7f,8);
+            box.updateGeometry(Vector3f.ZERO, 0.1f, 0.7f, 0.99f);
+        }else if(numSide==3){
+            //[10.0, 1.0, -2.0] ---z
+            rows=9;
+            numPerRows=3;
+            xVar=0;
+            zVar=-1;
+            startPoint.set(10.001f,1.7f,-2);
+            box.updateGeometry(Vector3f.ZERO, 0.1f, 0.7f, 0.99f);
+        }else if(numSide==4){
+            //[8.0, 1.0, -10.0] ---x
+            rows=9;
+            numPerRows=3;
+            xVar=-1;
+            zVar=0;
+            startPoint.set(8,1.7f,-9.999f);
+            box.updateGeometry(Vector3f.ZERO, 0.99f, 0.7f, 0.1f);
+        }else if(numSide==5){
+            //[-2.0, 1.0, -10.0] ---x
+            rows=13;
+            numPerRows=3;
+            xVar=-1;
+            zVar=0;
+            startPoint.set(-2,1.7f,-9.999f);
+            box.updateGeometry(Vector3f.ZERO, 0.99f, 0.7f, 0.1f);
+        }else if(numSide==6){
+            //[-10.0, 1.0, -8.0] +++z
+            rows=13;
+            numPerRows=3;
+            xVar=0;
+            zVar=1;
+            startPoint.set(-9.999f,1.7f,-8);
+            box.updateGeometry(Vector3f.ZERO, 0.1f, 0.7f, 0.99f);
+        }
+        
+        
+        
+        for(int i=0;i<numWindows;i++){
+            coord=new Vector2f(rand.nextInt(numPerRows),rand.nextInt(rows));
+           // while(used.contains(coord)){
+           //     coord=new Vector2f(rand.nextInt(numPerRows),rand.nextInt(rows));
+           // }
+            Vector3f pt= startPoint.add(new Vector3f(xVar*coord.getX()*spaceX,coord.getY()*spaceY,zVar*coord.getX()*spaceX));
+            //Spatial dirtyWindow =  assetManager.loadModel("Models/dirtyWindow/dirtyWindow.j3o");
+            
+            
+            
+            Geometry dirtyWindow = new Geometry("Window_"+numSide+"_"+coord.getY()+"_"+coord.getX(), box);
+            dirtyWindow.setLocalTranslation(pt);
+            dirtyWindow.setQueueBucket(RenderQueue.Bucket.Transparent);
+            dirtyWindow.setMaterial(mat1);
+            
+            dirtyWindowsNode.attachChild(dirtyWindow);
+            
+            
+            System.out.println("Wlarus");
+            
+            
+        }
       
     }
 }
