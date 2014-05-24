@@ -34,7 +34,6 @@ public class BabyDropperControl implements Control {
     private boolean enabled=true;
     private Sphere sphere;
     private Material mat1;
-    private RigidBodyControl ball_phy;
     
     private Node rootNode;
     protected PhysicsSpace physicsSpace;
@@ -65,12 +64,14 @@ public class BabyDropperControl implements Control {
         Geometry ball_geo = new Geometry("BABY", sphere);
         ball_geo.setMaterial(mat1);
         ballNode.attachChild(ball_geo);
-        ball_geo.setLocalTranslation(pos);
-        ball_phy = new RigidBodyControl(1f);
+       RigidBodyControl ball_phy = new RigidBodyControl(1f);
+       
         rootNode.attachChild(ballNode);
         ballNode.addControl(ball_phy);
         
         physicsSpace.add(ballNode);
+        ball_phy.setPhysicsLocation(pos);
+        ball_phy.clearForces();
       }
     
     

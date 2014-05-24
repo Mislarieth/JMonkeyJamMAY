@@ -1,58 +1,33 @@
 package mygame;
 
 import com.jme3.app.SimpleApplication;
+import com.jme3.app.state.AbstractAppState;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
 import com.jme3.bullet.control.RigidBodyControl;
-import com.jme3.bullet.util.CollisionShapeFactory;
-import com.jme3.input.KeyInput;
-import com.jme3.input.controls.ActionListener;
-import com.jme3.input.controls.KeyTrigger;
-import com.jme3.light.AmbientLight;
-import com.jme3.light.DirectionalLight;
-import com.jme3.material.Material;
-import com.jme3.material.RenderState.BlendMode;
-import com.jme3.math.ColorRGBA;
-import com.jme3.math.FastMath;
-import com.jme3.math.Quaternion;
-import com.jme3.math.Vector2f;
 import com.jme3.math.Vector3f;
 import com.jme3.renderer.RenderManager;
-import com.jme3.renderer.queue.RenderQueue;
-import com.jme3.scene.CameraNode;
-import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
-import com.jme3.scene.control.CameraControl.ControlDirection;
-import com.jme3.scene.shape.Box;
 import com.jme3.system.AppSettings;
-import java.util.ArrayList;
-import java.util.Random;
-import mygame.controls.BabyDropperControl;
-import mygame.controls.BetterCharacterControl;
-import mygame.controls.CharacterAnimControl;
-import mygame.controls.CollisionDetector;
+import java.util.concurrent.Callable;
+import mygame.appstates.CollisionDetector;
+import mygame.appstates.InputAppstate;
+import mygame.appstates.MainGame;
+import mygame.appstates.StartScreenAppstate;
 
 /**
  * A walking physical character followed by a 3rd person camera. (No animation.)
  *
  * @author normenhansen, zathras
  */
-public class Main extends SimpleApplication implements ActionListener {
-
+public class Main extends SimpleApplication{
     private BulletAppState bulletAppState;
-    private BetterCharacterControl physicsCharacter;
-    private CharacterAnimControl characterAnimControl;
-    private Node windowsNode, dirtyWindowsNode,objectDropNode;
-    private Node characterNode;
-    private CameraNode camNode;
-    boolean rotate = false;
-    private float speed=5;
-    private Vector3f walkDirection = new Vector3f(0, 0, 0);
-    private Vector3f viewDirection = new Vector3f(0, 0, 1);
-    boolean leftStrafe = false, rightStrafe = false, forward = false, backward = false,
-            leftRotate = false, rightRotate = false;
+    private InputAppstate inputAppState;
+   
     
-    private Vector3f startPoint;
+   
+    private MainGame mainGameAppstate;
+    private StartScreenAppstate startScreen;
 
     public static void main(String[] args) {
         Main app = new Main();
@@ -66,544 +41,168 @@ public class Main extends SimpleApplication implements ActionListener {
     @Override
     public void simpleInitApp() {
         //setup keyboard mapping
-        setupKeys();
+        
 
         
         
-        windowsNode=new Node();
-        windowsNode.setName("Windows Node");
-        rootNode.attachChild(windowsNode);
-        dirtyWindowsNode=new Node();
-        rootNode.attachChild(dirtyWindowsNode);
-        objectDropNode=new Node();
-        rootNode.attachChild(objectDropNode);
-        
         // activate physics
         bulletAppState = new BulletAppState();
+        bulletAppState.setThreadingType(BulletAppState.ThreadingType.PARALLEL);
+        //bulletAppState.setBroadphaseType(PhysicsSpace.BroadphaseType.SIMPLE);
         
         stateManager.attach(bulletAppState);
         
-        CollisionDetector collisionAppState = new CollisionDetector(rootNode,getPhysicsSpace());
+        CollisionDetector collisionAppState = new CollisionDetector();
         stateManager.attach(collisionAppState);
         bulletAppState.getPhysicsSpace().addCollisionListener(collisionAppState);
         // init a physics test scene
         
-        setupPlanet();
+        mainGameAppstate=new MainGame();
+        
+        startScreen=new StartScreenAppstate();
+        this.setScreenState(startScreen);
+        
+        inputAppState= new InputAppstate(this);
+        stateManager.attach(inputAppState);
 
         // Create a node for the character model
-        characterNode = new Node("character node");
-        //characterNode.setLocalTranslation(new Vector3f(4, 5, 2));
-
-        // Add a character control to the node so we can add other things and
-        // control the model rotation
         
-        physicsCharacter = new BetterCharacterControl(0.7f, 2f, 8f, characterNode);
-        
-        characterNode.addControl(physicsCharacter);
-        getPhysicsSpace().add(physicsCharacter);
-        physicsCharacter.warp(startPoint);
-
-        
-        // Load model, attach to character node
-        Node model = (Node) assetManager.loadModel("Models/Sinbad/Sinbad.mesh.xml");
-        model.setLocalScale(0.2f);
-        model.setLocalTranslation(new Vector3f(0,1f,0));
-        characterNode.attachChild(model);
-        characterAnimControl = new CharacterAnimControl(model, physicsCharacter);
-        characterNode.addControl(characterAnimControl);
-        
-        // Add character node to the rootNode
-        rootNode.attachChild(characterNode);
 
         // Set forward camera node that follows the character, only used when
         // view is "locked"
-        camNode = new CameraNode("CamNode", cam);
-        camNode.setControlDir(ControlDirection.SpatialToCamera);
-        camNode.setLocalTranslation(new Vector3f(0, 2, -6));
-        Quaternion quat = new Quaternion();
-        // These coordinates are local, the camNode is attached to the character node!
-        quat.lookAt(Vector3f.UNIT_Z, Vector3f.UNIT_Y);
-        camNode.setLocalRotation(quat);
-        characterNode.attachChild(camNode);
+        
         // Disable by default, can be enabled via keyboard shortcut
-        camNode.setEnabled(false);
+        //camNode.setEnabled(false);
         flyCam.setMoveSpeed(20);
+        flyCam.setEnabled(false);
         //bulletAppState.setDebugEnabled(true);
     }
 
     @Override
     public void simpleUpdate(float tpf) {
         
-
-        // Get current forward and left vectors of model by using its rotation
-        // to rotate the unit vectors
-        Vector3f modelForwardDir = characterNode.getWorldRotation().mult(Vector3f.UNIT_Z);
-        Vector3f modelLeftDir = characterNode.getWorldRotation().mult(Vector3f.UNIT_X);
-
-        // WalkDirection is global!
-        // You *can* make your character fly with this.
-        walkDirection.set(0, 0, 0);
-        if (leftStrafe) {
-            walkDirection.addLocal(modelLeftDir.mult(speed));
-        } else if (rightStrafe) {
-            walkDirection.addLocal(modelLeftDir.negate().multLocal(speed));
-        }
-        if (forward) {
-            walkDirection.addLocal(modelForwardDir.mult(speed));
-        } else if (backward) {
-            walkDirection.addLocal(modelForwardDir.negate().multLocal(speed));
-        }
-        physicsCharacter.setWalkDirection(walkDirection);
-
-        // ViewDirection is local to characters physics system!
-        // The final world rotation depends on the gravity and on the state of
-        // setApplyPhysicsLocal()
-        if (leftRotate) {
-            Quaternion rotateL = new Quaternion().fromAngleAxis(FastMath.PI * tpf, Vector3f.UNIT_Y);
-            rotateL.multLocal(viewDirection);
-        } else if (rightRotate) {
-            Quaternion rotateR = new Quaternion().fromAngleAxis(-FastMath.PI * tpf, Vector3f.UNIT_Y);
-            rotateR.multLocal(viewDirection);
-        }
-        physicsCharacter.setViewDirection(viewDirection);
-       // fpsText.setText("Touch da ground = " + physicsCharacter.isOnGround());
-       /* if (!lockView) {
-            cam.lookAt(characterNode.getWorldTranslation().add(new Vector3f(0, 2, 0)), Vector3f.UNIT_Y);
-        }*/
     }
 
-    private void setupPlanet() {
-        AmbientLight al = new AmbientLight();
-        rootNode.addLight(al);
+    
+    
+    public void addModelAsset(final String fileLoc, final String name, final Vector3f loc){
+        enqueue(new Callable() {
 
-        DirectionalLight dl = new DirectionalLight();
-        dl.setDirection(Vector3f.UNIT_XYZ.negate());
-        rootNode.addLight(dl);
-        Node scene = (Node) assetManager.loadModel("Scenes/MainLevel/MainScene.j3o");
-        startPoint= scene.getChild("StartPoint").getLocalTranslation();
-        scene.addControl(new RigidBodyControl(0));
-        scene.setName("Main Scene");
-        rootNode.attachChild(scene);
-        getPhysicsSpace().add(scene);
-        
-        
-        
+            public Object call() throws Exception {
+                try{
+                    Node node = (Node) getAssetManager().loadModel(fileLoc);
+                    node.setName(name);
+                    rootNode.attachChild(node);
+                    
+                }catch (NullPointerException e){
+                    System.out.println("Specified object does not exist");
+                }
+                return null;
+            }
+
+
+        });
     }
+    public void addRigidBodyModelAsset(final String fileLoc, final String name, final Vector3f loc, final float mass){
+        enqueue(new Callable() {
+
+            public Object call() throws Exception {
+                try{
+                    Node node = (Node) getAssetManager().loadModel(fileLoc);
+                    node.setName(name);
+                    node.addControl(new RigidBodyControl(mass));
+                    rootNode.attachChild(node);
+                    getPhysicsSpace().add(node);
+                }catch (NullPointerException e){
+                    System.out.println("Specified object does not exist");
+                }
+                return null;
+            }
 
 
-    private PhysicsSpace getPhysicsSpace() {
+        });
+    }
+    /*public void addCharacterModelAsset(final String fileLoc, final String name, final Vector3f localLoc, final Vector3f startPoint, final float scale){
+        enqueue(new Callable() {
+
+            public Object call() throws Exception {
+                try{
+                    Node characterNode = new Node(name);
+
+                   BetterCharacterControl physicsCharacter = new BetterCharacterControl(0.7f, 2f, 8f, characterNode);
+
+                    characterNode.addControl(physicsCharacter);
+                    
+                    
+
+
+                    // Load model, attach to character node
+                    Node model = (Node) getAssetManager().loadModel(fileLoc);
+                    model.setLocalScale(scale);
+                    model.setLocalTranslation(localLoc);
+                    characterNode.attachChild(model);
+                    CharacterAnimControl characterAnimControl = new CharacterAnimControl(model, physicsCharacter);
+                    characterNode.addControl(characterAnimControl);
+
+                    // Add character node to the rootNode
+                    rootNode.attachChild(characterNode);
+                    getPhysicsSpace().add(physicsCharacter);
+                    physicsCharacter.warp(startPoint);
+                }catch (NullPointerException e){
+                    System.out.println("Specified object does not exist");
+                }
+                return null;
+            }
+
+
+        });
+    }*/
+    
+
+
+    public PhysicsSpace getPhysicsSpace() {
         return bulletAppState.getPhysicsSpace();
     }
-
-    public void onAction(String binding, boolean value, float tpf) {
-        if (binding.equals("Strafe Left")) {
-            if (value) {
-                leftStrafe=true;
-            } else {
-                leftStrafe=false;
-            }
-        } else if (binding.equals("Strafe Right")) {
-            if (value) {
-                rightStrafe=true;
-            } else {
-                rightStrafe=false;
-            }
-        } else if (binding.equals("Rotate Left")) {
-            if (value) {
-                leftRotate=true;
-            } else {
-                leftRotate=false;
-            }
-        } else if (binding.equals("Rotate Right")) {
-            if (value) {
-                
-                rightRotate=true;
-            } else {
-                rightRotate=false;
-                
-            }
-        } else if (binding.equals("Walk Forward")) {
-            if (value) {
-                forward=true;
-            } else {
-                forward=false;
-            }
-        } else if (binding.equals("Walk Backward")) {
-            if (value) {
-                backward=true;
-            } else {
-                backward=false;
-            }
-        } else if (binding.equals("Jump")) {
-            physicsCharacter.jump();
-        } else if (binding.equals("Duck")) {
-            if (value) {
-                physicsCharacter.setDucked(true);
-            } else {
-                physicsCharacter.setDucked(false);
-            }
-        } else if (binding.equals("Lock View")) {
-            if (value && lockView) {
-                lockView = false;
-            } else if (value && !lockView) {
-                lockView = true;
-            }
-            flyCam.setEnabled(!lockView);
-            camNode.setEnabled(lockView);
-        }else if (binding.equals("GenTest")) {
-            if (value) {
-                generateSide(5,20,10,4);
-            } else {
-               
-            }
-        }
+    public BulletAppState getBulletAppState(){
+        return bulletAppState;
     }
-    private boolean lockView = false;
 
-    private void setupKeys() {
-        inputManager.addMapping("Strafe Left",
-                new KeyTrigger(KeyInput.KEY_U),
-                new KeyTrigger(KeyInput.KEY_Z));
-        inputManager.addMapping("Strafe Right",
-                new KeyTrigger(KeyInput.KEY_O),
-                new KeyTrigger(KeyInput.KEY_X));
-        inputManager.addMapping("Rotate Left",
-                new KeyTrigger(KeyInput.KEY_J),
-                new KeyTrigger(KeyInput.KEY_LEFT));
-        inputManager.addMapping("Rotate Right",
-                new KeyTrigger(KeyInput.KEY_L),
-                new KeyTrigger(KeyInput.KEY_RIGHT));
-        inputManager.addMapping("Walk Forward",
-                new KeyTrigger(KeyInput.KEY_I),
-                new KeyTrigger(KeyInput.KEY_UP));
-        inputManager.addMapping("Walk Backward",
-                new KeyTrigger(KeyInput.KEY_K),
-                new KeyTrigger(KeyInput.KEY_DOWN));
-        inputManager.addMapping("Jump",
-                new KeyTrigger(KeyInput.KEY_F),
-                new KeyTrigger(KeyInput.KEY_SPACE));
-        inputManager.addMapping("Duck",
-                new KeyTrigger(KeyInput.KEY_G),
-                new KeyTrigger(KeyInput.KEY_LSHIFT),
-                new KeyTrigger(KeyInput.KEY_RSHIFT));
-        inputManager.addMapping("Lock View",
-                new KeyTrigger(KeyInput.KEY_RETURN));
-        inputManager.addMapping("GenTest",
-                new KeyTrigger(KeyInput.KEY_V));
-        inputManager.addListener(this, "Strafe Left", "Strafe Right");
-        inputManager.addListener(this, "Rotate Left", "Rotate Right");
-        inputManager.addListener(this, "Walk Forward", "Walk Backward");
-        inputManager.addListener(this, "Jump", "Duck", "Lock View");
-        inputManager.addListener(this, "GenTest");
-    }
+    
 
     @Override
     public void simpleRender(RenderManager rm) {
     }
-    
-    
-    
-    ArrayList windowSillList=new ArrayList();
-    public void generateWindows(int numSide, int numWindows){
-        Vector3f startPoint=new Vector3f();
-        ArrayList used = new ArrayList();
-        Vector2f coord;
-        Random rand = new Random();
-        float spaceY=3.5f;
-        int spaceX=3;
-        int xVar=1;
-        int zVar=1;
-        Box box=new Box();
-        int rows=0,numPerRows=3;
-        Material mat1 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        //mat1.setBoolean("UseMaterialColors", true);
-        mat1.setColor("Color", new ColorRGBA(0.5764706f,0.42352942f,0.41960785f,1));
-        RigidBodyControl rbc = new RigidBodyControl(0);
-        /* A colored lit cube. Needs light source! */ 
-        
-        windowSillList.clear();
-         //windowsNode.removeControl(RigidBodyControl.class);
-         windowsNode.detachAllChildren();
-         
-        
-        
-        if(numSide==1){
-            //2,1,10   +++x
-            rows=6;
-            numPerRows=3;
-            xVar=1;
-            zVar=0;
-            startPoint.set(2,1,10);
-            box.updateGeometry(Vector3f.ZERO, 1, 0.25f, 2);
-        }else if(numSide==2){
-            //10,1,8   ---z
-            rows=6;
-            numPerRows=3;
-            xVar=0;
-            zVar=-1;
-            startPoint.set(10,1,8);
-            box.updateGeometry(Vector3f.ZERO, 2, 0.25f, 1);
-        }else if(numSide==3){
-            //[10.0, 1.0, -2.0] ---z
-            rows=9;
-            numPerRows=3;
-            xVar=0;
-            zVar=-1;
-            startPoint.set(10,1,-2);
-            box.updateGeometry(Vector3f.ZERO, 2, 0.25f, 1);
-        }else if(numSide==4){
-            //[8.0, 1.0, -10.0] ---x
-            rows=9;
-            numPerRows=3;
-            xVar=-1;
-            zVar=0;
-            startPoint.set(8,1,-10);
-            box.updateGeometry(Vector3f.ZERO, 1, 0.25f, 2);
-        }else if(numSide==5){
-            //[-2.0, 1.0, -10.0] ---x
-            rows=13;
-            numPerRows=3;
-            xVar=-1;
-            zVar=0;
-            startPoint.set(-2,1,-10);
-            box.updateGeometry(Vector3f.ZERO, 1, 0.25f, 2);
-        }else if(numSide==6){
-            //[-10.0, 1.0, -8.0] +++z
-            rows=13;
-            numPerRows=3;
-            xVar=0;
-            zVar=1;
-            startPoint.set(-10,1,-8);
-            box.updateGeometry(Vector3f.ZERO, 2, 0.25f, 1);
-        }
-        
-        
-        
-        for(int i=0;i<numWindows;i++){
-            coord=new Vector2f(rand.nextInt(numPerRows),rand.nextInt(rows));
-           // while(used.contains(coord)){
-           //     coord=new Vector2f(rand.nextInt(numPerRows),rand.nextInt(rows));
-           // }
-            
-            if(!windowSillList.contains(coord)){
-                windowSillList.add(coord);
-                used.add(coord);
-                Vector3f pt= startPoint.add(new Vector3f(xVar*coord.getX()*spaceX,coord.getY()*spaceY,zVar*coord.getX()*spaceX));
-                Geometry windowSill = new Geometry("Window_"+numSide+"_"+coord.getY()+"_"+coord.getX(), box);
-                windowSill.setLocalTranslation(pt);
-                windowSill.setMaterial(mat1);
-                windowsNode.attachChild(windowSill);
-            }
-            
-            
-            
-        }
-        rbc.setCollisionShape(CollisionShapeFactory.createMeshShape((Node) windowsNode ));
-        if(windowsNode.getControl(RigidBodyControl.class)!=null){
-            
-            getPhysicsSpace().remove(windowsNode);
-            windowsNode.removeControl(RigidBodyControl.class);
-        }
-        windowsNode.addControl(rbc);
-        getPhysicsSpace().add(windowsNode);
-      
-    }
-    public void generateDirtyWindows(int numSide, int numWindows){
-        Vector3f startPoint=new Vector3f();
-        Vector2f coord;
-        Random rand = new Random();
-        float spaceY=3.5f;
-        int spaceX=3;
-        int xVar=1;
-        int zVar=1;
-        int rows=0,numPerRows=3;
-        Box box=new Box(1,1,1);
-        Material mat1 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat1.setColor("Color", new ColorRGBA(0.5764706f,0.42352942f,0.41960785f,1));
-        mat1.setTexture("ColorMap", assetManager.loadTexture("Models/dirtyWindow/textures/DirtyWindow.png"));
-        mat1.getAdditionalRenderState().setBlendMode(BlendMode.Alpha);
-        
-        /* A colored lit cube. Needs light source! */ 
-        
-        
-         //windowsNode.removeControl(RigidBodyControl.class);
-         dirtyWindowsNode.detachAllChildren();
-         
-        
-        
-        if(numSide==1){
-            //2,1,10   +++x
-            rows=6;
-            numPerRows=3;
-            xVar=1;
-            zVar=0;
-            startPoint.set(2,1.7f,10.001f);
-            box.updateGeometry(Vector3f.ZERO, 0.99f, 0.7f, 0.1f);
-        }else if(numSide==2){
-            //10,1,8   ---z
-            rows=6;
-            numPerRows=3;
-            xVar=0;
-            zVar=-1;
-            startPoint.set(10.001f,1.7f,8);
-            box.updateGeometry(Vector3f.ZERO, 0.1f, 0.7f, 0.99f);
-        }else if(numSide==3){
-            //[10.0, 1.0, -2.0] ---z
-            rows=9;
-            numPerRows=3;
-            xVar=0;
-            zVar=-1;
-            startPoint.set(10.001f,1.7f,-2);
-            box.updateGeometry(Vector3f.ZERO, 0.1f, 0.7f, 0.99f);
-        }else if(numSide==4){
-            //[8.0, 1.0, -10.0] ---x
-            rows=9;
-            numPerRows=3;
-            xVar=-1;
-            zVar=0;
-            startPoint.set(8,1.7f,-9.999f);
-            box.updateGeometry(Vector3f.ZERO, 0.99f, 0.7f, 0.1f);
-        }else if(numSide==5){
-            //[-2.0, 1.0, -10.0] ---x
-            rows=13;
-            numPerRows=3;
-            xVar=-1;
-            zVar=0;
-            startPoint.set(-2,1.7f,-9.999f);
-            box.updateGeometry(Vector3f.ZERO, 0.99f, 0.7f, 0.1f);
-        }else if(numSide==6){
-            //[-10.0, 1.0, -8.0] +++z
-            rows=13;
-            numPerRows=3;
-            xVar=0;
-            zVar=1;
-            startPoint.set(-9.999f,1.7f,-8);
-            box.updateGeometry(Vector3f.ZERO, 0.1f, 0.7f, 0.99f);
-        }
-        
-        
-        
-        for(int i=0;i<numWindows;i++){
-            coord=new Vector2f(rand.nextInt(numPerRows),rand.nextInt(rows));
-           // while(used.contains(coord)){
-           //     coord=new Vector2f(rand.nextInt(numPerRows),rand.nextInt(rows));
-           // }
-            Vector3f pt= startPoint.add(new Vector3f(xVar*coord.getX()*spaceX,coord.getY()*spaceY,zVar*coord.getX()*spaceX));
-            //Spatial dirtyWindow =  assetManager.loadModel("Models/dirtyWindow/dirtyWindow.j3o");
-            
-            
-            
-            Geometry dirtyWindow = new Geometry("Window_"+numSide+"_"+coord.getY()+"_"+coord.getX(), box);
-            dirtyWindow.setLocalTranslation(pt);
-            dirtyWindow.setQueueBucket(RenderQueue.Bucket.Transparent);
-            dirtyWindow.setMaterial(mat1);
-            
-            dirtyWindowsNode.attachChild(dirtyWindow);
-            
-        }
-      
-    }
-    public void generateSide(int sideNumber, int numLedge, int numDirtyWindows, int babyDropper){
-        generateWindows(sideNumber, numLedge);
-        generateDirtyWindows(sideNumber, numDirtyWindows);
-        generateObjectDropper(sideNumber, babyDropper);
-    }
-    public void generateObjectDropper(int numSide, int numWindows){
-        Vector3f animPoint=new Vector3f();
-        Vector3f objectDropPoint=new Vector3f();
-        Vector2f coord;
-        Random rand = new Random();
-        float spaceY=3.5f;
-        int spaceX=3;
-        int xVar=1;
-        int zVar=1;
-        int rows=0,numPerRows=3;
-        Box box=new Box(0.25f,0.25f,0.25f);
-        Material mat1 = new Material(assetManager, "Common/MatDefs/Misc/Unshaded.j3md");
-        mat1.setColor("Color", ColorRGBA.Blue);
-        
-         //windowsNode.removeControl(RigidBodyControl.class);
-         objectDropNode.detachAllChildren();
-         
-        
-        
-        if(numSide==1){
-            //2,1,10   +++x
-            rows=6;
-            numPerRows=3;
-            xVar=1;
-            zVar=0;
-            animPoint.set(2,1.7f,10.001f);
-            objectDropPoint.set(2,1.7f,12);
-        }else if(numSide==2){
-            //10,1,8   ---z
-            rows=6;
-            numPerRows=3;
-            xVar=0;
-            zVar=-1;
-            animPoint.set(10.001f,1.7f,8);
-            objectDropPoint.set(12,1.7f,8f);
-        }else if(numSide==3){
-            //[10.0, 1.0, -2.0] ---z
-            rows=9;
-            numPerRows=3;
-            xVar=0;
-            zVar=-1;
-            animPoint.set(10.001f,1.7f,-2);
-            objectDropPoint.set(12,1.7f,-2);
-        }else if(numSide==4){
-            //[8.0, 1.0, -10.0] ---x
-            rows=9;
-            numPerRows=3;
-            xVar=-1;
-            zVar=0;
-            animPoint.set(8,1.7f,-9.999f);
-            objectDropPoint.set(8,1.7f,-8);
-        }else if(numSide==5){
-            //[-2.0, 1.0, -10.0] ---x
-            rows=13;
-            numPerRows=3;
-            xVar=-1;
-            zVar=0;
-            animPoint.set(-2,1.7f,-9.999f);
-            objectDropPoint.set(-2,1.7f,-12);
-        }else if(numSide==6){
-            //[-10.0, 1.0, -8.0] +++z
-            rows=13;
-            numPerRows=3;
-            xVar=0;
-            zVar=1;
-            animPoint.set(-9.999f,1.7f,-8);
-            objectDropPoint.set(-8,1.7f,-8);
-        }
-        
-        
-        
-        for(int i=0;i<numWindows;i++){
-            coord=new Vector2f(rand.nextInt(numPerRows),rand.nextInt(rows));
-           // while(used.contains(coord)){
-           //     coord=new Vector2f(rand.nextInt(numPerRows),rand.nextInt(rows));
-           // }
-            if(!windowSillList.contains(coord)){
-                Vector3f pt= animPoint.add(new Vector3f(xVar*coord.getX()*spaceX,coord.getY()*spaceY,zVar*coord.getX()*spaceX));
-                //Spatial dirtyWindow =  assetManager.loadModel("Models/dirtyWindow/dirtyWindow.j3o");
-                Vector3f dropPt= objectDropPoint.add(new Vector3f(xVar*coord.getX()*spaceX,coord.getY()*spaceY,zVar*coord.getX()*spaceX));
-                int dropTime=rand.nextInt(6)+1;
 
-                Geometry objectDropper = new Geometry("Window_"+numSide+"_"+coord.getY()+"_"+coord.getX(), box);
-                objectDropper.setLocalTranslation(pt);
-                objectDropper.setMaterial(mat1);
-
-                objectDropNode.attachChild(objectDropper);
-                BabyDropperControl bdc = new BabyDropperControl(assetManager,rootNode,getPhysicsSpace(),dropPt,dropTime);
-                objectDropper.addControl(bdc);
-                System.out.println(dropTime);
-            }else{
-                System.out.println("Bollocks.");
-            }
-            
-            
-        }
-      
+    public MainGame getMainGameAppstate() {
+        return mainGameAppstate;
     }
+    
+    
+    
+    
+    //sets the appstate
+    //used by external appstates at the destruction of itself
+    int gameScreen=0;
+    public void setScreenState(AbstractAppState state){
+        if(state instanceof MainGame){
+            if(gameScreen==0){
+                stateManager.detach(stateManager.getState(StartScreenAppstate.class));
+            
+            }
+            gameScreen = 1;
+        }/*else if(state instanceof InGame){
+            if(gameScreen==0){
+                stateManager.detach(uslog);
+            }
+            gameScreen=1;
+        }*/
+        stateManager.attach(state);
+    }
+
+    public int getGameScreen() {
+        return gameScreen;
+    }
+    
+    
+    
 }
