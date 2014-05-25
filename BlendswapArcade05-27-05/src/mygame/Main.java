@@ -142,12 +142,15 @@ public class Main extends SimpleApplication{
     
     //sets the appstate
     //used by external appstates at the destruction of itself
-    int gameScreen=0;
+    public int gameScreen=0;
     public void setScreenState(AbstractAppState state){
         if(state instanceof MainGame){
             if(gameScreen==0){
                 stateManager.detach(stateManager.getState(StartScreenAppstate.class));
+<<<<<<< .merge_file_a06212
                
+=======
+>>>>>>> .merge_file_a02136
             }
             gameScreen = 1;
         }/*else if(state instanceof InGame){

@@ -1,0 +1,22 @@
+diff a/BlendswapArcade05-27-05/src/mygame/Main.java b/BlendswapArcade05-27-05/src/mygame/Main.java	(rejected hunks)
+@@ -182,12 +197,11 @@
+     
+     //sets the appstate
+     //used by external appstates at the destruction of itself
+-    int gameScreen=0;
++    public int gameScreen=0;
+     public void setScreenState(AbstractAppState state){
+         if(state instanceof MainGame){
+             if(gameScreen==0){
+                 stateManager.detach(stateManager.getState(StartScreenAppstate.class));
+-            
+             }
+             gameScreen = 1;
+         }/*else if(state instanceof InGame){
+@@ -205,4 +219,4 @@
+     
+     
+     
+-}
++}
+\ No newline at end of file
