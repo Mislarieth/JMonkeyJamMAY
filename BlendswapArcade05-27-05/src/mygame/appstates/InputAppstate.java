@@ -5,6 +5,7 @@
 package mygame.appstates;
 
 import com.jme3.app.state.AbstractAppState;
+import com.jme3.app.state.AppStateManager;
 import com.jme3.input.KeyInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
@@ -110,7 +111,12 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
             }
         } else if (binding.equals("Jump")) {
             if(app.getGameScreen()==1){
-               app.getMainGameAppstate().getPhysicsCharacter().jump();
+                if (value) {
+                    app.getMainGameAppstate().getPhysicsCharacter().jump();
+                } else {
+                    //app.getMainGameAppstate().setBackward(false);
+                }
+               
             }else if(app.getGameScreen()==0){
                 app.setScreenState(app.getMainGameAppstate());
             }
@@ -134,5 +140,20 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
             
         }
     }
+    
+    @Override
+      public void stateDetached(AppStateManager stateManager) {
+            app.getInputManager().removeListener(this);
+            app.getInputManager().deleteMapping("Strafe Left");
+            app.getInputManager().deleteMapping("Strafe Right");
+            app.getInputManager().deleteMapping("Rotate Left");
+            app.getInputManager().deleteMapping("Rotate Right");
+            app.getInputManager().deleteMapping("Walk Forward");
+            app.getInputManager().deleteMapping("Walk Backward");
+            app.getInputManager().deleteMapping("Jump");
+            app.getInputManager().deleteMapping("Duck");
+            app.getInputManager().deleteMapping("Lock View");
+            app.getInputManager().deleteMapping("GenTest");
+      }
     
 }

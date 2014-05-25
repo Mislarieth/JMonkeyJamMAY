@@ -11,6 +11,7 @@ import com.jme3.bullet.collision.shapes.CapsuleCollisionShape;
 import com.jme3.bullet.collision.shapes.CollisionShape;
 import com.jme3.bullet.collision.shapes.CompoundCollisionShape;
 import com.jme3.bullet.control.AbstractPhysicsControl;
+import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.objects.PhysicsRigidBody;
 import com.jme3.export.InputCapsule;
 import com.jme3.export.JmeExporter;
@@ -51,6 +52,7 @@ public class BetterCharacterControl extends AbstractPhysicsControl implements Ph
     protected float mass;
     protected float duckedFactor = 0.6f;
     protected Spatial model;
+    protected int maxJump=1, numJump=0;
     /**
 * Local up direction, derived from gravity.
 */
@@ -91,6 +93,7 @@ public class BetterCharacterControl extends AbstractPhysicsControl implements Ph
     protected float physicsDamping = 0.9f;
     protected final Vector3f scale = new Vector3f(1, 1, 1);
     protected final Vector3f velocity = new Vector3f();
+    protected float jumpHeight=10;
     protected float speed=6;
     protected boolean jump = false;
     protected boolean onGround = false;
@@ -122,7 +125,7 @@ public class BetterCharacterControl extends AbstractPhysicsControl implements Ph
         this.height = height;
         this.mass = mass;
         rigidBody = new PhysicsRigidBody(getShape(), mass);
-        jumpForce = new Vector3f(0, mass * 10, 0);
+        jumpForce = new Vector3f(0, mass * jumpHeight, 0);
         rigidBody.setAngularFactor(0);
         model=m;
     }
@@ -131,6 +134,7 @@ public class BetterCharacterControl extends AbstractPhysicsControl implements Ph
     public void update(float tpf) {
         super.update(tpf);
         rigidBody.getPhysicsLocation(location);
+        setJumpForce(new Vector3f(0, mass * jumpHeight, 0));
         //rotation has been set through viewDirection
         applyPhysicsTransform(location, rotation);
     }
@@ -241,9 +245,10 @@ public class BetterCharacterControl extends AbstractPhysicsControl implements Ph
 */
     public void jump() {
         //TODO: debounce over some frames
-        if (!onGround) {
+        if (numJump>=maxJump) {
             return;
         }
+        numJump++;
         jump = true;
     }
 
@@ -498,8 +503,9 @@ public class BetterCharacterControl extends AbstractPhysicsControl implements Ph
         List<PhysicsRayTestResult> results = space.rayTest(location, rayVector);
         vars.release();
         for (PhysicsRayTestResult physicsRayTestResult : results) {
-            if (!physicsRayTestResult.getCollisionObject().equals(rigidBody)) {
+            if (!physicsRayTestResult.getCollisionObject().equals(rigidBody)&&physicsRayTestResult.getCollisionObject()instanceof RigidBodyControl) {
                 onGround = true;
+                numJump=0;
                 return;
             }
         }

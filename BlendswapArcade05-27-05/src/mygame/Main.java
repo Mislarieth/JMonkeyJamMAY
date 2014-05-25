@@ -40,14 +40,10 @@ public class Main extends SimpleApplication{
 
     @Override
     public void simpleInitApp() {
-        //setup keyboard mapping
-        
-
-        
-        
         // activate physics
         bulletAppState = new BulletAppState();
         bulletAppState.setThreadingType(BulletAppState.ThreadingType.PARALLEL);
+        
         //bulletAppState.setBroadphaseType(PhysicsSpace.BroadphaseType.SIMPLE);
         
         stateManager.attach(bulletAppState);
@@ -122,42 +118,6 @@ public class Main extends SimpleApplication{
 
         });
     }
-    /*public void addCharacterModelAsset(final String fileLoc, final String name, final Vector3f localLoc, final Vector3f startPoint, final float scale){
-        enqueue(new Callable() {
-
-            public Object call() throws Exception {
-                try{
-                    Node characterNode = new Node(name);
-
-                   BetterCharacterControl physicsCharacter = new BetterCharacterControl(0.7f, 2f, 8f, characterNode);
-
-                    characterNode.addControl(physicsCharacter);
-                    
-                    
-
-
-                    // Load model, attach to character node
-                    Node model = (Node) getAssetManager().loadModel(fileLoc);
-                    model.setLocalScale(scale);
-                    model.setLocalTranslation(localLoc);
-                    characterNode.attachChild(model);
-                    CharacterAnimControl characterAnimControl = new CharacterAnimControl(model, physicsCharacter);
-                    characterNode.addControl(characterAnimControl);
-
-                    // Add character node to the rootNode
-                    rootNode.attachChild(characterNode);
-                    getPhysicsSpace().add(physicsCharacter);
-                    physicsCharacter.warp(startPoint);
-                }catch (NullPointerException e){
-                    System.out.println("Specified object does not exist");
-                }
-                return null;
-            }
-
-
-        });
-    }*/
-    
 
 
     public PhysicsSpace getPhysicsSpace() {
@@ -187,7 +147,7 @@ public class Main extends SimpleApplication{
         if(state instanceof MainGame){
             if(gameScreen==0){
                 stateManager.detach(stateManager.getState(StartScreenAppstate.class));
-            
+               
             }
             gameScreen = 1;
         }/*else if(state instanceof InGame){
@@ -202,7 +162,9 @@ public class Main extends SimpleApplication{
     public int getGameScreen() {
         return gameScreen;
     }
-    
+    public void setFlycam(boolean enable){
+        flyCam.setEnabled(enable);
+    }
     
     
 }

@@ -72,6 +72,7 @@ public class BabyDropperControl implements Control {
         physicsSpace.add(ballNode);
         ball_phy.setPhysicsLocation(pos);
         ball_phy.clearForces();
+        ball_phy.setLinearVelocity(Vector3f.UNIT_Y.mult(-1));
       }
     
     
@@ -79,7 +80,6 @@ public class BabyDropperControl implements Control {
         if(timing>=updateTime){
             makeCannonBall(rootNode, physicsSpace, pos);
             timing=0;
-            System.out.println("Walrus");
         }
         timing+=tpf;
     }
