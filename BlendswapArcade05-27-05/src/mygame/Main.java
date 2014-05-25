@@ -14,6 +14,7 @@ import mygame.appstates.CollisionDetector;
 import mygame.appstates.InputAppstate;
 import mygame.appstates.MainGame;
 import mygame.appstates.StartScreenAppstate;
+import tonegod.gui.core.Screen;
 
 /**
  * A walking physical character followed by a 3rd person camera. (No animation.)
@@ -64,6 +65,7 @@ public class Main extends SimpleApplication{
         
         inputAppState= new InputAppstate(this);
         stateManager.attach(inputAppState);
+        
 
         // Create a node for the character model
         
@@ -76,6 +78,19 @@ public class Main extends SimpleApplication{
         flyCam.setMoveSpeed(20);
         flyCam.setEnabled(false);
         //bulletAppState.setDebugEnabled(true);
+    }
+    
+    public void addGuiControl(Screen screen){
+        guiNode.addControl(screen);
+    }
+    
+    public void startGame(Screen screen){
+        guiNode.removeControl(screen);
+        this.setScreenState(mainGameAppstate);
+    }
+    
+    public void stopGame(){
+        this.stop();
     }
 
     @Override
@@ -182,12 +197,13 @@ public class Main extends SimpleApplication{
     
     //sets the appstate
     //used by external appstates at the destruction of itself
-    int gameScreen=0;
+    public int gameScreen=0;
     public void setScreenState(AbstractAppState state){
         if(state instanceof MainGame){
             if(gameScreen==0){
                 stateManager.detach(stateManager.getState(StartScreenAppstate.class));
-            
+                
+                System.out.println("YO MADE IT");
             }
             gameScreen = 1;
         }/*else if(state instanceof InGame){
@@ -196,6 +212,8 @@ public class Main extends SimpleApplication{
             }
             gameScreen=1;
         }*/
+        stateManager.detach(stateManager.getState(StartScreenAppstate.class));
+        gameScreen = 1;
         stateManager.attach(state);
     }
 

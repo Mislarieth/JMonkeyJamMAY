@@ -37,6 +37,16 @@ import mygame.Main;
 import mygame.controls.BabyDropperControl;
 import mygame.controls.BetterCharacterControl;
 import mygame.controls.CharacterAnimControl;
+import com.jme3.app.SimpleApplication;
+import com.jme3.input.event.MouseButtonEvent;
+import com.jme3.math.Vector2f;
+import tonegod.gui.controls.buttons.ButtonAdapter;
+import tonegod.gui.controls.windows.AlertBox;
+import tonegod.gui.controls.windows.Window;
+import tonegod.gui.core.Screen;
+import com.jme3.scene.Node;
+import tonegod.gui.style.StyleManager;
+
 
 /**
  *
@@ -46,7 +56,7 @@ public class StartScreenAppstate extends AbstractAppState{
     private Main app;
     private Node rootNode;
     
-     private MotionPath path;
+    private MotionPath path;
     private MotionEvent cameraMotionControl;
     private ChaseCamera chaser;
     private CameraNode camNode;
@@ -56,9 +66,16 @@ public class StartScreenAppstate extends AbstractAppState{
     private Vector3f top= new Vector3f(0,50,0);
     private boolean goingUp=true;
     
+    public int winCount = 0;
+    private Screen screen;
+    public Window win;
+    
     public StartScreenAppstate(){
-        
+        /*this.app = app;
+        this.screen = screen;*/
     }
+    
+    
     @Override
     public void initialize(AppStateManager stateManager, Application app) {
         super.initialize(stateManager, app);
@@ -69,7 +86,8 @@ public class StartScreenAppstate extends AbstractAppState{
           this.rootNode=this.app.getRootNode();
           
           setupPlanet();
-          setUpCam();  
+          setUpCam();
+          setUpGui();
        
     }
     
@@ -77,6 +95,8 @@ public class StartScreenAppstate extends AbstractAppState{
       public void stateAttached(AppStateManager stateManager) {
           
       }
+      
+      
       public void setupPlanet() {
         AmbientLight al = new AmbientLight();
         rootNode.addLight(al);
@@ -86,11 +106,9 @@ public class StartScreenAppstate extends AbstractAppState{
         rootNode.addLight(dl);
         
         app.addRigidBodyModelAsset("Scenes/MainLevel/MainScene.j3o", "Main Scene", Vector3f.ZERO,0);
-        
-        
-        
     }
-     
+      
+      
       private void setUpCam(){
             camNode = new CameraNode("CamNode", app.getCamera());
             camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
@@ -132,6 +150,98 @@ public class StartScreenAppstate extends AbstractAppState{
 
       }
       
+      public void setUpGui(){
+        screen = new Screen(app);
+        screen.initialize();
+        screen.setUseCustomCursors(true);
+        app.addGuiControl(screen);
+        
+        // Add window
+        win = new Window(screen, "MainMenu", new Vector2f(screen.getWidth()/2, screen.getHeight()/2), new Vector2f(500, 160));
+        
+        // Window position is top-left based, move window to center
+        win.moveTo(win.getX()-(win.getWidth()/2), win.getY()-(win.getHeight()/2));
+        
+        // set other misc attrs of window
+        //win.setFont("/Path/To/Font");
+        win.setIsMovable(false);
+        win.setWindowIsMovable(false);
+        win.setResizeN(false);
+        win.setResizeS(false);
+        win.setResizeE(false);
+        win.setResizeW(false);
+        win.setWindowTitle("Window Washer");
+        
+        // create button and add to window
+        int buttonPadding = 40;
+        ButtonAdapter btn1 = new ButtonAdapter( screen, "Btn1", new Vector2f((win.getWidth()/2)-((win.getWidth()-20)/2), 35),  new Vector2f(win.getWidth()-20, 35)) {
+            @Override
+            public void onButtonMouseLeftUp(MouseButtonEvent evt, boolean toggled) {
+                startGame();
+            }
+        };
+        btn1.setText("Play");
+        
+        ButtonAdapter btn2 = new ButtonAdapter( screen, "Btn2", new Vector2f((win.getWidth()/2)-((win.getWidth()-20)/2), 35+(buttonPadding)),  new Vector2f(win.getWidth()-20, 35)) {
+            @Override
+            public void onButtonMouseLeftUp(MouseButtonEvent evt, boolean toggled) {
+                createNewWindow("YOU HAVE 110 SWEG MESSAGES");
+            }
+        };
+        btn2.setText("Options");
+        
+        ButtonAdapter btn3 = new ButtonAdapter( screen, "Btn3", new Vector2f((win.getWidth()/2)-((win.getWidth()-20)/2), 35+(buttonPadding*2)),  new Vector2f(win.getWidth()-20, 35)) {
+            @Override
+            public void onButtonMouseLeftUp(MouseButtonEvent evt, boolean toggled) {
+                stopGame();
+            }
+        };
+        btn3.setText("Exit");
+        
+        // Add it to out initial window
+        win.addChild(btn1);
+        win.addChild(btn2);
+        win.addChild(btn3);
+
+        // Add window to the screen
+       screen.addElement(win);
+    }
+      
+      public final void createNewWindow(String someWindowTitle) {
+        AlertBox nWin = new AlertBox(screen,"Window" + winCount,new Vector2f( screen.getWidth()/2, screen.getHeight()/2)) {
+            String uid="Window"+(winCount);
+            @Override
+            public void onButtonOkPressed(MouseButtonEvent evt, boolean toggled) {
+                screen.removeElement(screen.getElementById(uid));
+            }
+        };
+        nWin.setWindowTitle("YOLO SWEG");
+        nWin.setMsg(someWindowTitle);
+        nWin.setButtonOkText("Close");
+        nWin.setResizeN(false);
+        nWin.setResizeE(false);
+        nWin.setResizeS(false);
+        nWin.setResizeW(false);
+        nWin.setWindowIsMovable(false);
+        nWin.moveTo(nWin.getX()-(nWin.getWidth()/2), nWin.getY()-(nWin.getHeight()/2));
+        
+        
+        screen.addElement(nWin);
+        winCount++;
+    }
+      
+    public void startGame(){
+        if(screen.getElementById("MainMenu") != null){
+            screen.removeElement(screen.getElementById("MainMenu"));
+        }
+        screen.setUseCustomCursors(false);
+        app.startGame(screen);
+    }
+    
+    public void stopGame(){
+        app.stopGame();
+    }
+      
       @Override
     public void update(float tpf) {
        
@@ -148,6 +258,7 @@ public class StartScreenAppstate extends AbstractAppState{
       @Override
       public void stateDetached(AppStateManager stateManager) {
           app.getRootNode().detachChild(camNode);
+          
       }
     
     @Override
@@ -155,8 +266,6 @@ public class StartScreenAppstate extends AbstractAppState{
         super.cleanup();
  
     }
-    
-    
 }
 
 
