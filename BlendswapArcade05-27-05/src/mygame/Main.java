@@ -202,8 +202,6 @@ public class Main extends SimpleApplication{
         if(state instanceof MainGame){
             if(gameScreen==0){
                 stateManager.detach(stateManager.getState(StartScreenAppstate.class));
-                
-                System.out.println("YO MADE IT");
             }
             gameScreen = 1;
         }/*else if(state instanceof InGame){
@@ -212,8 +210,6 @@ public class Main extends SimpleApplication{
             }
             gameScreen=1;
         }*/
-        stateManager.detach(stateManager.getState(StartScreenAppstate.class));
-        gameScreen = 1;
         stateManager.attach(state);
     }
 

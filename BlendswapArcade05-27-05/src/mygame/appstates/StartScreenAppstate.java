@@ -110,10 +110,10 @@ public class StartScreenAppstate extends AbstractAppState{
       
       
       private void setUpCam(){
-            camNode = new CameraNode("CamNode", app.getCamera());
-            camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
-            camNode.setLocalTranslation(new Vector3f(0, 2, -6));
-            path = new MotionPath();
+        camNode = new CameraNode("CamNode", app.getCamera());
+        camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
+        camNode.setLocalTranslation(new Vector3f(0, 2, -6));
+        path = new MotionPath();
         path.setCycle(true);
         path.addWayPoint(new Vector3f(20, 6, 20));
         path.addWayPoint(new Vector3f(0, 9, 30));
