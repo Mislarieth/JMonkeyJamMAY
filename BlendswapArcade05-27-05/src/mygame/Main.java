@@ -14,6 +14,7 @@ import mygame.appstates.CollisionDetector;
 import mygame.appstates.InputAppstate;
 import mygame.appstates.MainGame;
 import mygame.appstates.StartScreenAppstate;
+import tonegod.gui.core.Screen;
 
 /**
  * A walking physical character followed by a 3rd person camera. (No animation.)
@@ -147,10 +148,6 @@ public class Main extends SimpleApplication{
         if(state instanceof MainGame){
             if(gameScreen==0){
                 stateManager.detach(stateManager.getState(StartScreenAppstate.class));
-<<<<<<< .merge_file_a06212
-               
-=======
->>>>>>> .merge_file_a02136
             }
             gameScreen = 1;
         }/*else if(state instanceof InGame){
@@ -169,5 +166,16 @@ public class Main extends SimpleApplication{
         flyCam.setEnabled(enable);
     }
     
+    public void addGuiControl(Screen screen){
+        guiNode.addControl(screen);
+    }
+    
+    public void startGame(Screen screen){
+        guiNode.removeControl(screen);
+        this.setScreenState(mainGameAppstate);
+    }
+    public void stopGame(){
+        this.stop();
+    }
     
 }
