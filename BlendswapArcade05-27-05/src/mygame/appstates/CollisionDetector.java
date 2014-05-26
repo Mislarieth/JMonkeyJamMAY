@@ -192,6 +192,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                          if(app.getMainGameAppstate().isInGame()){
                             app.getMainGameAppstate().cleanupLevel();
                             app.getMainGameAppstate().addPoints(500);
+                            app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.set(charLoc.getX(), 22, 8));
                          }
                     }
                 } else if (nodeBName.equals("Level1Top")) {
@@ -199,6 +200,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                          if(app.getMainGameAppstate().isInGame()){
                             app.getMainGameAppstate().cleanupLevel();
                             app.getMainGameAppstate().addPoints(500);
+                            app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.set(charLoc.getX(), 22, 8));
                          }
                         
                     }

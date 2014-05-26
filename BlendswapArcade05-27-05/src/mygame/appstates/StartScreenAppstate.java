@@ -105,7 +105,8 @@ public class StartScreenAppstate extends AbstractAppState{
         dl.setDirection(Vector3f.UNIT_XYZ.negate());
         rootNode.addLight(dl);
         
-        app.addRigidBodyModelAsset("Scenes/MainScene.j3o", "Main Scene", Vector3f.ZERO,0);
+        app.addModelAsset("Scenes/TestScene.j3o", "Main Scene", Vector3f.ZERO);
+        this.app.addModelAsset("Models/Trees/Trees.j3o", "Trees", Vector3f.ZERO);
         
       }
       

@@ -90,6 +90,7 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
                         app.getMainGameAppstate().setLeftRotate(false);
                     }
                 }else{
+                    app.getMainGameAppstate().setLeftRotate(false);
                     if (value) {
                         app.getMainGameAppstate().setLeftStrafe(true);
                     } else {
@@ -107,6 +108,7 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
                         app.getMainGameAppstate().setRightRotate(false);
                     }
                 }else{
+                    app.getMainGameAppstate().setRightRotate(false);
                     if (value) {
                         app.getMainGameAppstate().setRightStrafe(true);
                     } else {

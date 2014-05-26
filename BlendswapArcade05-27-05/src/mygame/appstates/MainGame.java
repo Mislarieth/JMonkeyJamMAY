@@ -102,6 +102,10 @@ public class MainGame extends AbstractAppState{
           this.rootNode=this.app.getRootNode();
           this.bulletAppState=this.app.getStateManager().getState(BulletAppState.class);
          //bulletAppState.setDebugEnabled(true);
+          Node mainNode=(Node) rootNode.getChild("Main Scene");
+          mainNode.addControl(new RigidBodyControl(0));
+          getPhysicsSpace().add(mainNode);
+          
           
           setUpNodes();
           setUpCharacter();

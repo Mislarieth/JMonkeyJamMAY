@@ -100,7 +100,7 @@ public class Main extends SimpleApplication{
 
         });
     }
-    public void addRigidBodyModelAsset(final String fileLoc, final String name, final Vector3f loc, final float mass){
+    /*public void addRigidBodyModelAsset(final String fileLoc, final String name, final Vector3f loc, final float mass){
         enqueue(new Callable() {
 
             public Object call() throws Exception {
@@ -118,7 +118,7 @@ public class Main extends SimpleApplication{
 
 
         });
-    }
+    }*/
 
 
     public PhysicsSpace getPhysicsSpace() {

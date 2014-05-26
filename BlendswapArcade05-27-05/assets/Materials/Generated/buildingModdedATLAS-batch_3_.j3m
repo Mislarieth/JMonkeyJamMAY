@@ -1,0 +1,25 @@
+Material MyMaterial : Common/MatDefs/Light/Lighting.j3md {
+    MaterialParameters {
+        DiffuseMap : Flip Repeat Models/buildingModdedATLAS/textures/Floor_Tiles_Color.tga
+        Minnaert : false
+        Specular : 0.3372549 0.30588236 0.30588236 1.0
+        Diffuse : 0.26666668 0.20784314 0.19215687 1.0
+        UseMaterialColors : true
+        ParallaxHeight : 0.05
+        NormalMap : Flip Repeat Models/buildingModdedATLAS/textures/Floor_Tiles_Normal.tga
+        Ambient : 0.0 0.0 0.0 1.0
+        Shininess : 0.9
+        WardIso : false
+    }
+    AdditionalRenderState {
+      FaceCull Back
+      Wireframe Off
+      DepthWrite On
+      PolyOffset 0.0 0.0
+      AlphaTestFalloff 0.0
+      Blend Off
+      PointSprite Off
+      ColorWrite On
+      DepthTest On
+    }
+}
