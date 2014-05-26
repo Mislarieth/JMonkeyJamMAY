@@ -7,8 +7,10 @@ package mygame.appstates;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.MouseButtonTrigger;
 import mygame.Main;
 
 /**
@@ -58,6 +60,8 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
         app.getInputManager().addListener(this, "Walk Forward", "Walk Backward");
         app.getInputManager().addListener(this, "Jump", "Duck", "Lock View");
         app.getInputManager().addListener(this, "GenTest");
+        app.getInputManager().addMapping("Shoot", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        app.getInputManager().addListener(this, "Shoot");
     }
     public void onAction(String binding, boolean value, float tpf) {
         if (binding.equals("Strafe Left")) {
@@ -179,6 +183,17 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
             }
             
         } 
+        if(binding.equals("Shoot")){
+            if (value) {
+                if(app.getGameScreen()==1){
+                    app.getMainGameAppstate().cleanWindow();
+
+                }
+               
+            } else {
+
+            }
+        }
     }
     
     @Override

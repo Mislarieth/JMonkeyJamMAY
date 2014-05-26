@@ -768,6 +768,22 @@ public class MainGame extends AbstractAppState{
         generateObjectDropper(sideNumber, babyDropper);
         generateUserStuffs(sideNumber);
     }
+    CollisionResults results = new CollisionResults();
+    public void cleanWindow(){
+        results.clear();
+        Vector2f click2d = app.getInputManager().getCursorPosition();
+        Vector3f click3d = app.getCamera().getWorldCoordinates(new Vector2f(click2d.x, click2d.y), 0f).clone();
+        Vector3f dir = app.getCamera().getWorldCoordinates(new Vector2f(click2d.x, click2d.y), 1f).subtractLocal(click3d).normalizeLocal();
+        Ray ray = new Ray(click3d, dir);
+        dirtyWindowsNode.collideWith(ray, results);
+        if (results.size() > 0) {
+            if(results.getClosestCollision().getGeometry().getWorldTranslation().distance(physicsCharacter.getPhysicsLocation())<=2.5f){
+                dirtyWindowsNode.detachChild(results.getClosestCollision().getGeometry());
+            }
+            
+        }
+    }
+    
     public void cleanupLevel(){
         setLevel(0);
         emptyNodes();
