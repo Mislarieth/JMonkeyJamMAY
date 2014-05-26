@@ -105,8 +105,9 @@ public class StartScreenAppstate extends AbstractAppState{
         dl.setDirection(Vector3f.UNIT_XYZ.negate());
         rootNode.addLight(dl);
         
-        app.addRigidBodyModelAsset("Scenes/MainLevel/MainScene.j3o", "Main Scene", Vector3f.ZERO,0);
-    }
+        app.addRigidBodyModelAsset("Scenes/MainScene.j3o", "Main Scene", Vector3f.ZERO,0);
+        
+      }
       
       
       private void setUpCam(){
@@ -300,10 +301,7 @@ public class StartScreenAppstate extends AbstractAppState{
              
              center.interpolate(new Vector3f(center.x,path.getWayPoint(index).y,center.z), 0.1f*tpf);
              
-             System.out.println("X: " + win.getX() + "/" + screen.getWidth());
-             System.out.println("Y: " + win.getY() + "/" + screen.getHeight());
-             System.out.println("Width: " + win.getWidth());
-             System.out.println("Height: " + win.getHeight());
+             
         
     }
 

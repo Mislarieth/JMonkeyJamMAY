@@ -57,22 +57,29 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                 if ( nodeAName.equals("BABY")) {
                     Spatial node =  event.getNodeA();
                     if ( nodeBName.equals("character node")){
-                        int lives=app.getStateManager().getState(MainGame.class).getLives();
-                        app.getStateManager().getState(MainGame.class).setLives(lives-1);
-                        System.out.println(app.getStateManager().getState(MainGame.class).getLives());
+                        if(!app.getMainGameAppstate().isUseSammich()){
+                            int lives=app.getStateManager().getState(MainGame.class).getLives();
+                            app.getStateManager().getState(MainGame.class).setLives(lives-1);
+                            System.out.println("BUGEREJG");
+                        }
+                        
                     }
                     if(node!=null){
+                        app.getMainGameAppstate().objectHit(node.getWorldTranslation());
                         physicsSpace.remove(node);
                         rootNode.detachChild(node);
                     }
                 } else if ( nodeBName.equals("BABY")) {
                     Spatial node = (Node) event.getNodeB();
                     if ( nodeAName.equals("character node")){
-                        int lives=app.getStateManager().getState(MainGame.class).getLives();
-                        app.getStateManager().getState(MainGame.class).setLives(lives-1);
-                        System.out.println(app.getStateManager().getState(MainGame.class).getLives());
+                        if(!app.getMainGameAppstate().isUseSammich()){
+                            int lives=app.getStateManager().getState(MainGame.class).getLives();
+                            app.getStateManager().getState(MainGame.class).setLives(lives-1);
+                            System.out.println("BUGEREJG");
+                        }
                     }
                     if(node!=null){
+                        app.getMainGameAppstate().objectHit(node.getWorldTranslation());
                         physicsSpace.remove(node);
                         rootNode.detachChild(node);
                     }
@@ -182,11 +189,17 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                 }
                 if (nodeAName.equals("Level1Top")) {
                     if (nodeBName.equals("character node")){
-                        app.getMainGameAppstate().cleanupLevel();
+                         if(app.getMainGameAppstate().isInGame()){
+                            app.getMainGameAppstate().cleanupLevel();
+                            app.getMainGameAppstate().addPoints(500);
+                         }
                     }
                 } else if (nodeBName.equals("Level1Top")) {
                     if (nodeAName.equals("character node")){
-                        app.getMainGameAppstate().cleanupLevel();
+                         if(app.getMainGameAppstate().isInGame()){
+                            app.getMainGameAppstate().cleanupLevel();
+                            app.getMainGameAppstate().addPoints(500);
+                         }
                         
                     }
                 }
@@ -209,11 +222,17 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                 }
                 if (nodeAName.equals("Level2Top")) {
                     if (nodeBName.equals("character node")){
-                        app.getMainGameAppstate().cleanupLevel();
+                         if(app.getMainGameAppstate().isInGame()){
+                            app.getMainGameAppstate().cleanupLevel();
+                            app.getMainGameAppstate().addPoints(750);
+                         }
                     }
                 } else if (nodeBName.equals("Level2Top")) {
                     if (nodeAName.equals("character node")){
-                        app.getMainGameAppstate().cleanupLevel();
+                         if(app.getMainGameAppstate().isInGame()){
+                            app.getMainGameAppstate().cleanupLevel();
+                            app.getMainGameAppstate().addPoints(750);
+                         }
                     }
                 }
 
@@ -235,11 +254,17 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                 }
                 if (nodeAName.equals("Level3Top")) {
                     if (nodeBName.equals("character node")){
-                        app.getMainGameAppstate().cleanupLevel();
+                         if(app.getMainGameAppstate().isInGame()){
+                            app.getMainGameAppstate().cleanupLevel();
+                            app.getMainGameAppstate().addPoints(1000);
+                         }
                     }
                 } else if (nodeBName.equals("Level3Top")) {
                     if (nodeAName.equals("character node")){
-                        app.getMainGameAppstate().cleanupLevel();
+                         if(app.getMainGameAppstate().isInGame()){
+                            app.getMainGameAppstate().cleanupLevel();
+                            app.getMainGameAppstate().addPoints(1000);
+                         }
                     }
                 }
 
@@ -261,11 +286,17 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                 }
                 if (nodeAName.equals("Level4Top")) {
                     if (nodeBName.equals("character node")){
-                        app.getMainGameAppstate().cleanupLevel();
+                         if(app.getMainGameAppstate().isInGame()){
+                            app.getMainGameAppstate().cleanupLevel();
+                            app.getMainGameAppstate().addPoints(1250);
+                         }
                     }
                 } else if (nodeBName.equals("Level4Top")) {
                     if (nodeAName.equals("character node")){
-                        app.getMainGameAppstate().cleanupLevel();
+                         if(app.getMainGameAppstate().isInGame()){
+                            app.getMainGameAppstate().cleanupLevel();
+                            app.getMainGameAppstate().addPoints(1250);
+                         }
                     }
                 }
 
@@ -289,11 +320,17 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                 }
                 if (nodeAName.equals("Level5Top")) {
                     if (nodeBName.equals("character node")){
-                        app.getMainGameAppstate().cleanupLevel();
+                         if(app.getMainGameAppstate().isInGame()){
+                            app.getMainGameAppstate().cleanupLevel();
+                            app.getMainGameAppstate().addPoints(1500);
+                         }
                     }
                 } else if (nodeBName.equals("Level5Top")) {
                     if (nodeAName.equals("character node")){
-                        app.getMainGameAppstate().cleanupLevel();
+                         if(app.getMainGameAppstate().isInGame()){
+                            app.getMainGameAppstate().cleanupLevel();
+                            app.getMainGameAppstate().addPoints(1500);
+                         }
                     }
                 }
 
@@ -315,11 +352,17 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                 }
                 if (nodeAName.equals("Level6Top")) {
                     if (nodeBName.equals("character node")){
-                        app.getMainGameAppstate().cleanupLevel();
+                        if(app.getMainGameAppstate().isInGame()){
+                            app.getMainGameAppstate().cleanupLevel();
+                            app.getMainGameAppstate().addPoints(2000);
+                        }
                     }
                 } else if (nodeBName.equals("Level6Top")) {
                     if (nodeAName.equals("character node")){
-                        app.getMainGameAppstate().cleanupLevel();
+                         if(app.getMainGameAppstate().isInGame()){
+                            app.getMainGameAppstate().cleanupLevel();
+                            app.getMainGameAppstate().addPoints(2000);
+                         }
                     }
                 }
             }

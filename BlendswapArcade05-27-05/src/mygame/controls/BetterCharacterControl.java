@@ -52,7 +52,7 @@ public class BetterCharacterControl extends AbstractPhysicsControl implements Ph
     protected float mass;
     protected float duckedFactor = 0.6f;
     protected Spatial model;
-    protected int maxJump=1, numJump=0;
+    protected int maxJump=0, numJump=0;
     /**
 * Local up direction, derived from gravity.
 */
@@ -101,6 +101,8 @@ public class BetterCharacterControl extends AbstractPhysicsControl implements Ph
     protected boolean wantToUnDuck = false;
     protected boolean leftStrafe = false, rightStrafe = false, forward = false, backward = false,
             leftRotate = false, rightRotate = false;
+    protected float timeBetweenNextJump=0;
+    protected boolean canDoubleJump=false;
 
     
 
@@ -151,6 +153,7 @@ public class BetterCharacterControl extends AbstractPhysicsControl implements Ph
 * @param tpf
 */
     public void prePhysicsTick(PhysicsSpace space, float tpf) {
+        timeBetweenNextJump+=tpf;
         checkOnGround();
         if (wantToUnDuck && checkCanUnDuck()) {
             setHeightPercent(1);
@@ -245,10 +248,15 @@ public class BetterCharacterControl extends AbstractPhysicsControl implements Ph
 */
     public void jump() {
         //TODO: debounce over some frames
-        if (numJump>=maxJump) {
+        
+        if (!onGround&&!canDoubleJump) {
+            return;
+        }
+        if (numJump>maxJump) {
             return;
         }
         numJump++;
+        System.out.println(numJump);
         jump = true;
     }
 
@@ -505,7 +513,10 @@ public class BetterCharacterControl extends AbstractPhysicsControl implements Ph
         for (PhysicsRayTestResult physicsRayTestResult : results) {
             if (!physicsRayTestResult.getCollisionObject().equals(rigidBody)&&physicsRayTestResult.getCollisionObject()instanceof RigidBodyControl) {
                 onGround = true;
-                numJump=0;
+                if(timeBetweenNextJump>=1){
+                    numJump=0;
+                }
+                
                 return;
             }
         }
@@ -752,5 +763,29 @@ public class BetterCharacterControl extends AbstractPhysicsControl implements Ph
     }
     public Vector3f getPhysicsLocation(){
         return rigidBody.getPhysicsLocation();
+    }
+
+    public int getNumJump() {
+        return numJump;
+    }
+
+    public void setMaxJump(int maxJump) {
+        this.maxJump = maxJump;
+    }
+
+    public int getMaxJump() {
+        return maxJump;
+    }
+
+    public void setCanDoubleJump(boolean canDoubleJump) {
+        this.canDoubleJump = canDoubleJump;
+    }
+
+    public boolean isCanDoubleJump() {
+        return canDoubleJump;
+    }
+    public void setJumpHeight(float height){
+        jumpHeight=height;
+        setJumpForce(new Vector3f(0, mass * jumpHeight, 0));
     }
 }

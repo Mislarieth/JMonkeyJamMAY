@@ -4,21 +4,18 @@
  */
 package mygame.appstates;
 
-import com.jme3.animation.LoopMode;
 import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
 import com.jme3.bullet.BulletAppState;
 import com.jme3.bullet.PhysicsSpace;
-import com.jme3.bullet.collision.PhysicsCollisionObject;
 import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.control.GhostControl;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
-import com.jme3.cinematic.MotionPath;
-import com.jme3.cinematic.MotionPathListener;
-import com.jme3.cinematic.events.MotionEvent;
 import com.jme3.collision.CollisionResults;
+import com.jme3.effect.ParticleEmitter;
+import com.jme3.effect.ParticleMesh;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
@@ -66,6 +63,13 @@ public class MainGame extends AbstractAppState{
     private Vector3f camLocation=new Vector3f(0,0,0);
     private Quaternion camRotation= new Quaternion();
     float camSpeed=2f;
+    private  ParticleEmitter fire, objectHit, invincibility;
+    private float maxParticleTime=3;
+    private float curParticleTime=0;
+    private float curObjectDropParticleTime=0;
+    
+    
+    private Material mat_red;
     
      boolean leftStrafe = false, rightStrafe = false, forward = false, backward = false,
             leftRotate = false, rightRotate = false;
@@ -79,6 +83,11 @@ public class MainGame extends AbstractAppState{
      * once you hit bottom ghost control, set level to level number
      * once you hit top ghost control&&level!=0 you completed it
      */
+    private int numPots=2, numSammiches=2;
+    private boolean hasJetpack=true, usePot=false,useSammich=false;
+    private float potTime=0,sammichTime=0;
+    private int numPoints=0;
+    
     
     public MainGame(){
         
@@ -99,6 +108,9 @@ public class MainGame extends AbstractAppState{
           setUpCam();
           setUpDoors();
           setUpLevels();
+          setUpParticles();
+          
+          
        
     }
     
@@ -298,6 +310,62 @@ public class MainGame extends AbstractAppState{
           doorNode.attachChild(node13);
           getPhysicsSpace().add(ghost13);
       }
+      public void setUpParticles(){
+         fire =  new ParticleEmitter("Emitter", ParticleMesh.Type.Triangle, 30);
+         mat_red = new Material(app.getAssetManager(),"Common/MatDefs/Misc/Particle.j3md");
+          mat_red.setTexture("Texture", app.getAssetManager().loadTexture("Effects/Explosion/flame.png"));
+        
+        fire.setMaterial(mat_red);
+        fire.setImagesX(2); 
+        fire.setImagesY(2); // 2x2 texture animation
+        fire.setEndColor(ColorRGBA.Blue);   // red
+        fire.setStartColor(ColorRGBA.LightGray); // yellow
+        fire.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 1, 0));
+        fire.setStartSize(1.5f);
+        fire.setEndSize(0.1f);
+        fire.setGravity(0, 0, 0);
+        fire.setLowLife(1f);
+        fire.setHighLife(1f);
+        fire.getParticleInfluencer().setVelocityVariation(0.3f);
+        
+            /** Explosion effect. Uses Texture from jme3-test-data library! */ 
+         objectHit = new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
+        Material debrisMat = new Material(app.getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
+        debrisMat.setTexture("Texture", app.getAssetManager().loadTexture("Effects/Explosion/Debris.png"));
+        objectHit.setMaterial(debrisMat);
+        objectHit.setImagesX(3); 
+        objectHit.setImagesY(3); // 3x3 texture animation
+        objectHit.setRotateSpeed(4);
+        objectHit.setSelectRandomImage(true);
+        objectHit.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 4, 0));
+        objectHit.setStartColor(new ColorRGBA(1f, 1f, 1f, 1f));
+        objectHit.setEndColor(ColorRGBA.Brown);
+        objectHit.setGravity(0f,6f,0f);
+        objectHit.getParticleInfluencer().setVelocityVariation(.60f);
+        objectHit.killAllParticles();
+        //rootNode.attachChild(objectHit);
+
+        
+        invincibility = new ParticleEmitter("Debris", ParticleMesh.Type.Triangle, 10);
+        Material invincibilityMat = new Material(app.getAssetManager(), "Common/MatDefs/Misc/Particle.j3md");
+        invincibilityMat.setTexture("Texture", app.getAssetManager().loadTexture("Effects/Explosion/shockwave.png"));
+        invincibility.setMaterial(invincibilityMat);
+        invincibility.setImagesX(1); 
+        invincibility.setImagesY(1); // 3x3 texture animation
+        //invincibility.setRotateSpeed(4);
+        //invincibility.setSelectRandomImage(true);
+        invincibility.getParticleInfluencer().setInitialVelocity(new Vector3f(0, 4, 0));
+        //invincibility.
+        invincibility.setStartSize(1.5f);
+        invincibility.setEndSize(0.1f);
+        invincibility.setLowLife(1f);
+        invincibility.setHighLife(1f);
+        invincibility.setStartColor(new ColorRGBA(1f, 1f, 1f, 1f));
+        invincibility.setEndColor(ColorRGBA.Brown);
+        //invincibility.setGravity(0f,6f,0f);
+        //invincibility.getParticleInfluencer().setVelocityVariation(.60f);
+        invincibility.killAllParticles();
+      }
       
       
       Vector3f camChange=new Vector3f();
@@ -321,6 +389,7 @@ public class MainGame extends AbstractAppState{
             viewDirection.set(gameViewDirection);
         }
         physicsCharacter.setViewDirection(viewDirection);
+        
           
           
         Vector3f modelForwardDir = characterNode.getWorldRotation().mult(Vector3f.UNIT_Z);
@@ -360,8 +429,50 @@ public class MainGame extends AbstractAppState{
             }
         }
         
-        
-        
+        if(curParticleTime>0){
+            curParticleTime+=tpf;
+            rootNode.attachChild(fire);
+            if(curParticleTime>=maxParticleTime){
+                fire.killAllParticles();
+                rootNode.detachChild(fire);
+            }
+        }
+         if(curObjectDropParticleTime>0){
+            curObjectDropParticleTime+=tpf;
+            rootNode.attachChild(objectHit);
+            if(curObjectDropParticleTime>=maxParticleTime){
+                objectHit.killAllParticles();
+                rootNode.detachChild(objectHit);
+            }
+        }
+         
+         
+             physicsCharacter.setCanDoubleJump(hasJetpack);
+        if(useSammich){
+            sammichTime+=tpf;
+            System.out.println("It's sammich time!");
+            rootNode.attachChild(invincibility);
+            invincibility.setLocalTranslation(physicsCharacter.getPhysicsLocation());
+            //invincibility.emitAllParticles();
+            if(sammichTime>=3){
+                useSammich=false;
+                sammichTime=0;
+                invincibility.killAllParticles();
+                rootNode.detachChild(invincibility);
+            }
+        }
+        if(usePot){
+            potTime+=tpf;
+            physicsCharacter.setJumpHeight(20);
+            System.out.println("SUJPPPER JUMPPPP");
+            if(potTime>=3){
+                usePot=false;
+                potTime=0;
+                physicsCharacter.setJumpHeight(10);
+            }
+        }
+             
+             
         if(lives<=0){
             physicsCharacter.warp(regenPoint);
             lives=3;
@@ -770,6 +881,9 @@ public class MainGame extends AbstractAppState{
     }
     CollisionResults results = new CollisionResults();
     public void cleanWindow(){
+        
+        
+        
         results.clear();
         Vector2f click2d = app.getInputManager().getCursorPosition();
         Vector3f click3d = app.getCamera().getWorldCoordinates(new Vector2f(click2d.x, click2d.y), 0f).clone();
@@ -778,7 +892,13 @@ public class MainGame extends AbstractAppState{
         dirtyWindowsNode.collideWith(ray, results);
         if (results.size() > 0) {
             if(results.getClosestCollision().getGeometry().getWorldTranslation().distance(physicsCharacter.getPhysicsLocation())<=2.5f){
+                fire.setLocalTranslation(results.getClosestCollision().getGeometry().getWorldTranslation());
+                rootNode.attachChild(fire);
+                fire.emitAllParticles();
+                curParticleTime=0.01f;
                 dirtyWindowsNode.detachChild(results.getClosestCollision().getGeometry());
+                addPoints(100);
+                
             }
             
         }
@@ -795,6 +915,18 @@ public class MainGame extends AbstractAppState{
         camNode.setLocalRotation(quat);
         rootNode.detachChild(camNode);
         characterNode.attachChild(camNode);
+        rootNode.detachChild(fire);
+        rootNode.detachChild(objectHit);
+    }
+    
+    public void objectHit(Vector3f loc){
+        objectHit.setLocalTranslation(loc);
+        objectHit.emitAllParticles();
+        curObjectDropParticleTime=0.01f;
+    }
+    public void addPoints(int i){
+        numPoints+=i;
+        System.out.println(numPoints);
     }
     public void setViewDirection(Vector3f dir){
         viewDirection=dir;
@@ -886,6 +1018,48 @@ public class MainGame extends AbstractAppState{
     public void regen(){
         physicsCharacter.warp(regenPoint);
     }
+
+    public int getNumPots() {
+        return numPots;
+    }
+
+    public void setNumPots(int numPots) {
+        this.numPots = numPots;
+    }
+
+    public int getNumSammiches() {
+        return numSammiches;
+    }
+
+    public void setNumSammiches(int numSammiches) {
+        this.numSammiches = numSammiches;
+    }
+
+    public boolean isHasJetpack() {
+        return hasJetpack;
+    }
+
+    public void setHasJetpack(boolean hasJetpack) {
+        this.hasJetpack = hasJetpack;
+    }
+
+    public boolean isUsePot() {
+        return usePot;
+    }
+
+    public void setUsePot(boolean usePot) {
+        this.usePot = usePot;
+    }
+
+    public boolean isUseSammich() {
+        return useSammich;
+    }
+
+    public void setUseSammich(boolean useSammich) {
+        this.useSammich = useSammich;
+    }
+
+    
     
 }
 

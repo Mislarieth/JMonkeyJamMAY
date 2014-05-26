@@ -27,34 +27,25 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
     
     private void setupKeys() {
         app.getInputManager().addMapping("Strafe Left",
-                new KeyTrigger(KeyInput.KEY_U),
-                new KeyTrigger(KeyInput.KEY_Z));
+                new KeyTrigger(KeyInput.KEY_R));
         app.getInputManager().addMapping("Strafe Right",
-                new KeyTrigger(KeyInput.KEY_O),
-                new KeyTrigger(KeyInput.KEY_X));
+                new KeyTrigger(KeyInput.KEY_F));
         app.getInputManager().addMapping("Rotate Left",
-                new KeyTrigger(KeyInput.KEY_J),
                 new KeyTrigger(KeyInput.KEY_A));
         app.getInputManager().addMapping("Rotate Right",
-                new KeyTrigger(KeyInput.KEY_L),
                 new KeyTrigger(KeyInput.KEY_D));
         app.getInputManager().addMapping("Walk Forward",
-                new KeyTrigger(KeyInput.KEY_I),
                 new KeyTrigger(KeyInput.KEY_W));
         app.getInputManager().addMapping("Walk Backward",
-                new KeyTrigger(KeyInput.KEY_K),
                 new KeyTrigger(KeyInput.KEY_S));
         app.getInputManager().addMapping("Jump",
-                new KeyTrigger(KeyInput.KEY_F),
                 new KeyTrigger(KeyInput.KEY_SPACE));
         app.getInputManager().addMapping("Duck",
-                new KeyTrigger(KeyInput.KEY_G),
-                new KeyTrigger(KeyInput.KEY_LSHIFT),
                 new KeyTrigger(KeyInput.KEY_RSHIFT));
         app.getInputManager().addMapping("Lock View",
-                new KeyTrigger(KeyInput.KEY_RETURN));
+                new KeyTrigger(KeyInput.KEY_LSHIFT));
         app.getInputManager().addMapping("GenTest",
-                new KeyTrigger(KeyInput.KEY_V));
+                new KeyTrigger(KeyInput.KEY_C));
         app.getInputManager().addListener(this, "Strafe Left", "Strafe Right");
         app.getInputManager().addListener(this, "Rotate Left", "Rotate Right");
         app.getInputManager().addListener(this, "Walk Forward", "Walk Backward");
@@ -66,21 +57,27 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
     public void onAction(String binding, boolean value, float tpf) {
         if (binding.equals("Strafe Left")) {
             if(app.getGameScreen()==1){
-                if(app.getStateManager().getState(MainGame.class).getLevel()!=0){
                     if (value) {
-                        app.getMainGameAppstate().setLeftStrafe(true);
+                        if(!app.getMainGameAppstate().isUseSammich()&&app.getMainGameAppstate().getNumSammiches()>0){
+                            app.getMainGameAppstate().setUseSammich(true);
+                            app.getMainGameAppstate().setNumSammiches(app.getMainGameAppstate().getNumSammiches()-1);
+                            System.out.println(app.getMainGameAppstate().getNumSammiches());
+                        }
                     } else {
-                        app.getMainGameAppstate().setLeftStrafe(false);
+                        //app.getMainGameAppstate().setLeftStrafe(false);
                     }
-                }
             }
             
         } else if (binding.equals("Strafe Right")) {
             if(app.getGameScreen()==1){
                 if (value) {
-                    app.getMainGameAppstate().setRightStrafe(true);
+                    if(!app.getMainGameAppstate().isUsePot()&&app.getMainGameAppstate().getNumPots()>0){
+                        app.getMainGameAppstate().setUsePot(true);
+                        app.getMainGameAppstate().setNumPots(app.getMainGameAppstate().getNumPots()-1);
+                        System.out.println(app.getMainGameAppstate().getNumPots());
+                    }
                 } else {
-                    app.getMainGameAppstate().setRightStrafe(false);
+                    //app.getMainGameAppstate().setRightStrafe(false);
                 }
             }
         } else if (binding.equals("Rotate Left")) {
@@ -156,21 +153,24 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
                 }
                
             }else if(app.getGameScreen()==0){
-                app.setScreenState(app.getMainGameAppstate());
+                //app.setScreenState(app.getMainGameAppstate());
             }
         } else if (binding.equals("Duck")) {
             if(app.getGameScreen()==1){
                 
                 if (value) {
-                    app.getMainGameAppstate().getPhysicsCharacter().setDucked(true);
+                   // app.getMainGameAppstate().getPhysicsCharacter().setDucked(true);
                 } else {
-                    app.getMainGameAppstate().getPhysicsCharacter().setDucked(false);
+                    //app.getMainGameAppstate().getPhysicsCharacter().setDucked(false);
                 }
             }
         }else if (binding.equals("GenTest")) {
             if(app.getGameScreen()==1){
                 if (value) {
-                    app.getMainGameAppstate().generateSide(1,10,10,4);
+                    if(app.getMainGameAppstate().getLevel()!=0){
+                        app.getMainGameAppstate().generateSide(app.getMainGameAppstate().getLevel(),10,10,4);
+                    }
+                    
                 } else {
 
                 }
