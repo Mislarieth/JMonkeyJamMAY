@@ -38,6 +38,7 @@ import mygame.controls.BabyDropperControl;
 import mygame.controls.BetterCharacterControl;
 import mygame.controls.CharacterAnimControl;
 import com.jme3.app.SimpleApplication;
+import com.jme3.font.LineWrapMode;
 import com.jme3.input.event.MouseButtonEvent;
 import com.jme3.math.Vector2f;
 import tonegod.gui.controls.buttons.ButtonAdapter;
@@ -157,10 +158,10 @@ public class StartScreenAppstate extends AbstractAppState{
         app.addGuiControl(screen);
         
         // Add window
-        win = new Window(screen, "MainMenu", new Vector2f(screen.getWidth()/2, screen.getHeight()/2), new Vector2f(500, 160));
+        win = new Window(screen, "MainMenu", new Vector2f(100, 200), new Vector2f(200, 220));
         
         // Window position is top-left based, move window to center
-        win.moveTo(win.getX()-(win.getWidth()/2), win.getY()-(win.getHeight()/2));
+        //win.moveTo(win.getX()-(win.getWidth()/2), win.getY()-(win.getHeight()/2));
         
         // set other misc attrs of window
         //win.setFont("/Path/To/Font");
@@ -185,30 +186,39 @@ public class StartScreenAppstate extends AbstractAppState{
         ButtonAdapter btn2 = new ButtonAdapter( screen, "Btn2", new Vector2f((win.getWidth()/2)-((win.getWidth()-20)/2), 35+(buttonPadding)),  new Vector2f(win.getWidth()-20, 35)) {
             @Override
             public void onButtonMouseLeftUp(MouseButtonEvent evt, boolean toggled) {
+                createInfoWindow();
+            }
+        };
+        btn2.setText("How to Play");
+        
+        ButtonAdapter btn3 = new ButtonAdapter( screen, "Btn2", new Vector2f((win.getWidth()/2)-((win.getWidth()-20)/2), 35+(buttonPadding*2)),  new Vector2f(win.getWidth()-20, 35)) {
+            @Override
+            public void onButtonMouseLeftUp(MouseButtonEvent evt, boolean toggled) {
                 createNewWindow("YOU HAVE 110 SWEG MESSAGES");
             }
         };
-        btn2.setText("Options");
+        btn3.setText("Options");
         
-        ButtonAdapter btn3 = new ButtonAdapter( screen, "Btn3", new Vector2f((win.getWidth()/2)-((win.getWidth()-20)/2), 35+(buttonPadding*2)),  new Vector2f(win.getWidth()-20, 35)) {
+        ButtonAdapter btn4 = new ButtonAdapter( screen, "Btn3", new Vector2f((win.getWidth()/2)-((win.getWidth()-20)/2), 35+(buttonPadding*3)),  new Vector2f(win.getWidth()-20, 35)) {
             @Override
             public void onButtonMouseLeftUp(MouseButtonEvent evt, boolean toggled) {
                 stopGame();
             }
         };
-        btn3.setText("Exit");
+        btn4.setText("Exit");
         
         // Add it to out initial window
         win.addChild(btn1);
         win.addChild(btn2);
         win.addChild(btn3);
+        win.addChild(btn4);
 
         // Add window to the screen
        screen.addElement(win);
     }
       
       public final void createNewWindow(String someWindowTitle) {
-        AlertBox nWin = new AlertBox(screen,"Window" + winCount,new Vector2f( screen.getWidth()/2, screen.getHeight()/2)) {
+        AlertBox nWin = new AlertBox(screen,"Window" + winCount, new Vector2f( screen.getWidth()/2, screen.getHeight()/2)) {
             String uid="Window"+(winCount);
             @Override
             public void onButtonOkPressed(MouseButtonEvent evt, boolean toggled) {
@@ -224,6 +234,48 @@ public class StartScreenAppstate extends AbstractAppState{
         nWin.setResizeW(false);
         nWin.setWindowIsMovable(false);
         nWin.moveTo(nWin.getX()-(nWin.getWidth()/2), nWin.getY()-(nWin.getHeight()/2));
+        
+        
+        screen.addElement(nWin);
+        winCount++;
+    }
+      
+      public final void createInfoWindow() {
+        Window nWin = new Window(screen, "Info", new Vector2f( screen.getWidth()-400, screen.getHeight()-700), new Vector2f(340, 400));
+        
+        nWin.setWindowTitle("Instructions");
+        nWin.setResizeN(false);
+        nWin.setResizeE(false);
+        nWin.setResizeS(false);
+        nWin.setResizeW(false);
+        nWin.setWindowIsMovable(false);
+        nWin.setTextWrap(LineWrapMode.NoWrap);
+        String InfoStr = "Objective:\n";
+        InfoStr += "    Hop up the side of the building and clean \n the windows while dodging objects flying out \n of the windows.\n";
+        InfoStr += "\n Controls: \n";
+        InfoStr += "    W: Walk Forward\n";
+        InfoStr += "    A: Rotate/Strafe Left\n";
+        InfoStr += "    S: Walk Backward\n";
+        InfoStr += "    D: Rotate/Strafe Right\n";
+        InfoStr += "    Space: Jump\n";
+        InfoStr += "    Enter: Restart Level\n";
+        InfoStr += "    Click: Clean Window\n";
+        nWin.setTextPosition(10, 30);
+        nWin.setText(InfoStr);
+        
+        //nWin.moveTo(nWin.getX()-(nWin.getWidth()/2), nWin.getY()-(nWin.getHeight()/2));
+        
+        ButtonAdapter closeInfoBtn = new ButtonAdapter( screen, "closeInfoBtn", new Vector2f(nWin.getWidth()-110, nWin.getHeight()-45),  new Vector2f(100, 35)) {
+            @Override
+            public void onButtonMouseLeftUp(MouseButtonEvent evt, boolean toggled) {
+                screen.removeElement(screen.getElementById("Info"));
+            }
+        };
+        closeInfoBtn.setText("Close");
+        
+        nWin.addChild(closeInfoBtn);
+        
+        
         
         
         screen.addElement(nWin);
@@ -247,6 +299,11 @@ public class StartScreenAppstate extends AbstractAppState{
        
              
              center.interpolate(new Vector3f(center.x,path.getWayPoint(index).y,center.z), 0.1f*tpf);
+             
+             System.out.println("X: " + win.getX() + "/" + screen.getWidth());
+             System.out.println("Y: " + win.getY() + "/" + screen.getHeight());
+             System.out.println("Width: " + win.getWidth());
+             System.out.println("Height: " + win.getHeight());
         
     }
 
