@@ -25,6 +25,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
     private Main app;
     protected PhysicsSpace physicsSpace;
     private Node rootNode;
+    private Vector3f charLoc=Vector3f.ZERO;
     
     
     
@@ -47,6 +48,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
     public void collision(PhysicsCollisionEvent event) {
         /*System.out.println(event.getNodeA().getName());
         System.out.println(event.getNodeB().getName());*/
+        charLoc=app.getMainGameAppstate().getPhysicsCharacter().getPhysicsLocation();
         if(event.getNodeA()!=null&&event.getNodeB()!=null){
             if (event.getNodeA().getName() != null && event.getNodeB().getName() != null){
                 String nodeAName=event.getNodeA().getName();
@@ -164,24 +166,28 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
 
                 if (nodeAName.equals("Level1Bottom")&&app.getStateManager().getState(MainGame.class).getLevel()==0) {
                     if (nodeBName.equals("character node")){
+                        
                         app.getStateManager().getState(MainGame.class).setLevel(1);
                         app.getMainGameAppstate().generateSide(1,10,10,4);
+                        app.getMainGameAppstate().setInGame(true);
+                        app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setZ(11.5f));
                     }
                 } else if (nodeBName.equals("Level1Bottom")&&app.getStateManager().getState(MainGame.class).getLevel()==0) {
                     if (nodeAName.equals("character node")){
                         app.getStateManager().getState(MainGame.class).setLevel(1);
                         app.getMainGameAppstate().generateSide(1,10,10,4);
+                        app.getMainGameAppstate().setInGame(true);
+                        app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setZ(11.5f));
                     }
                 }
                 if (nodeAName.equals("Level1Top")) {
                     if (nodeBName.equals("character node")){
-                        app.getStateManager().getState(MainGame.class).setLevel(0);
-                        app.getStateManager().getState(MainGame.class).emptyNodes();
+                        app.getMainGameAppstate().cleanupLevel();
                     }
                 } else if (nodeBName.equals("Level1Top")) {
                     if (nodeAName.equals("character node")){
-                        app.getStateManager().getState(MainGame.class).setLevel(0);
-                        app.getStateManager().getState(MainGame.class).emptyNodes();
+                        app.getMainGameAppstate().cleanupLevel();
+                        
                     }
                 }
 
@@ -190,22 +196,24 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                     if (nodeBName.equals("character node")){
                         app.getStateManager().getState(MainGame.class).setLevel(2);
                         app.getMainGameAppstate().generateSide(2,10,10,4);
+                        app.getMainGameAppstate().setInGame(true);
+                        app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setX(11.5f));
                     }
                 } else if (nodeBName.equals("Level2Bottom")&&app.getStateManager().getState(MainGame.class).getLevel()==0) {
                     if (nodeAName.equals("character node")){
                         app.getStateManager().getState(MainGame.class).setLevel(2);
                         app.getMainGameAppstate().generateSide(2,10,10,4);
+                        app.getMainGameAppstate().setInGame(true);
+                        app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setX(11.5f));
                     }
                 }
                 if (nodeAName.equals("Level2Top")) {
                     if (nodeBName.equals("character node")){
-                        app.getStateManager().getState(MainGame.class).setLevel(0);
-                        app.getStateManager().getState(MainGame.class).emptyNodes();
+                        app.getMainGameAppstate().cleanupLevel();
                     }
                 } else if (nodeBName.equals("Level2Top")) {
                     if (nodeAName.equals("character node")){
-                        app.getStateManager().getState(MainGame.class).setLevel(0);
-                        app.getStateManager().getState(MainGame.class).emptyNodes();
+                        app.getMainGameAppstate().cleanupLevel();
                     }
                 }
 
@@ -214,22 +222,24 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                     if (nodeBName.equals("character node")){
                         app.getStateManager().getState(MainGame.class).setLevel(3);
                         app.getMainGameAppstate().generateSide(3,10,10,4);
+                        app.getMainGameAppstate().setInGame(true);
+                        app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setX(11.5f));
                     }
                 } else if (nodeBName.equals("Level3Bottom")&&app.getStateManager().getState(MainGame.class).getLevel()==0) {
                     if (nodeAName.equals("character node")){
                         app.getStateManager().getState(MainGame.class).setLevel(3);
                         app.getMainGameAppstate().generateSide(3,10,10,4);
+                        app.getMainGameAppstate().setInGame(true);
+                        app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setX(11.5f));
                     }
                 }
                 if (nodeAName.equals("Level3Top")) {
                     if (nodeBName.equals("character node")){
-                        app.getStateManager().getState(MainGame.class).setLevel(0);
-                        app.getStateManager().getState(MainGame.class).emptyNodes();
+                        app.getMainGameAppstate().cleanupLevel();
                     }
                 } else if (nodeBName.equals("Level3Top")) {
                     if (nodeAName.equals("character node")){
-                        app.getStateManager().getState(MainGame.class).setLevel(0);
-                        app.getStateManager().getState(MainGame.class).emptyNodes();
+                        app.getMainGameAppstate().cleanupLevel();
                     }
                 }
 
@@ -238,22 +248,24 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                     if (nodeBName.equals("character node")){
                         app.getStateManager().getState(MainGame.class).setLevel(4);
                         app.getMainGameAppstate().generateSide(4,10,10,4);
+                        app.getMainGameAppstate().setInGame(true);
+                        app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setZ(-11.5f));
                     }
                 } else if (nodeBName.equals("Level4Bottom")&&app.getStateManager().getState(MainGame.class).getLevel()==0) {
                     if (nodeAName.equals("character node")){
                         app.getStateManager().getState(MainGame.class).setLevel(4);
                         app.getMainGameAppstate().generateSide(4,10,10,4);
+                        app.getMainGameAppstate().setInGame(true);
+                        app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setZ(-11.5f));
                     }
                 }
                 if (nodeAName.equals("Level4Top")) {
                     if (nodeBName.equals("character node")){
-                        app.getStateManager().getState(MainGame.class).setLevel(0);
-                        app.getStateManager().getState(MainGame.class).emptyNodes();
+                        app.getMainGameAppstate().cleanupLevel();
                     }
                 } else if (nodeBName.equals("Level4Top")) {
                     if (nodeAName.equals("character node")){
-                        app.getStateManager().getState(MainGame.class).setLevel(0);
-                        app.getStateManager().getState(MainGame.class).emptyNodes();
+                        app.getMainGameAppstate().cleanupLevel();
                     }
                 }
 
@@ -264,22 +276,24 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                     if (nodeBName.equals("character node")){
                         app.getStateManager().getState(MainGame.class).setLevel(5);
                         app.getMainGameAppstate().generateSide(5,10,10,4);
+                        app.getMainGameAppstate().setInGame(true);
+                        app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setZ(-11.5f));
                     }
                 } else if (nodeBName.equals("Level5Bottom")&&app.getStateManager().getState(MainGame.class).getLevel()==0) {
                     if (nodeAName.equals("character node")){
                         app.getStateManager().getState(MainGame.class).setLevel(5);
                         app.getMainGameAppstate().generateSide(5,10,10,4);
+                        app.getMainGameAppstate().setInGame(true);
+                        app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setZ(-11.5f));
                     }
                 }
                 if (nodeAName.equals("Level5Top")) {
                     if (nodeBName.equals("character node")){
-                        app.getStateManager().getState(MainGame.class).setLevel(0);
-                        app.getStateManager().getState(MainGame.class).emptyNodes();
+                        app.getMainGameAppstate().cleanupLevel();
                     }
                 } else if (nodeBName.equals("Level5Top")) {
                     if (nodeAName.equals("character node")){
-                        app.getStateManager().getState(MainGame.class).setLevel(0);
-                        app.getStateManager().getState(MainGame.class).emptyNodes();
+                        app.getMainGameAppstate().cleanupLevel();
                     }
                 }
 
@@ -288,23 +302,24 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                     if (nodeBName.equals("character node")){
                         app.getStateManager().getState(MainGame.class).setLevel(6);
                         app.getMainGameAppstate().generateSide(6,10,10,4);
-
+                        app.getMainGameAppstate().setInGame(true);
+                        app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setX(-11.5f));
                     }
                 } else if (nodeBName.equals("Level6Bottom")&&app.getStateManager().getState(MainGame.class).getLevel()==0) {
                     if (nodeAName.equals("character node")){
                         app.getStateManager().getState(MainGame.class).setLevel(6);
                         app.getMainGameAppstate().generateSide(6,10,10,4);
+                        app.getMainGameAppstate().setInGame(true);
+                        app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setX(-11.5f));
                     }
                 }
                 if (nodeAName.equals("Level6Top")) {
                     if (nodeBName.equals("character node")){
-                        app.getStateManager().getState(MainGame.class).setLevel(0);
-                        app.getStateManager().getState(MainGame.class).emptyNodes();
+                        app.getMainGameAppstate().cleanupLevel();
                     }
                 } else if (nodeBName.equals("Level6Top")) {
                     if (nodeAName.equals("character node")){
-                        app.getStateManager().getState(MainGame.class).setLevel(0);
-                        app.getStateManager().getState(MainGame.class).emptyNodes();
+                        app.getMainGameAppstate().cleanupLevel();
                     }
                 }
             }

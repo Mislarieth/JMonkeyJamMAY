@@ -750,4 +750,7 @@ public class BetterCharacterControl extends AbstractPhysicsControl implements Ph
     public void setRightRotate(boolean rightRotate) {
         this.rightRotate = rightRotate;
     }
+    public Vector3f getPhysicsLocation(){
+        return rigidBody.getPhysicsLocation();
+    }
 }

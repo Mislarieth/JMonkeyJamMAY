@@ -4,6 +4,7 @@
  */
 package mygame.appstates;
 
+import com.jme3.animation.LoopMode;
 import com.jme3.app.Application;
 import com.jme3.app.state.AbstractAppState;
 import com.jme3.app.state.AppStateManager;
@@ -14,6 +15,9 @@ import com.jme3.bullet.collision.shapes.BoxCollisionShape;
 import com.jme3.bullet.control.GhostControl;
 import com.jme3.bullet.control.RigidBodyControl;
 import com.jme3.bullet.util.CollisionShapeFactory;
+import com.jme3.cinematic.MotionPath;
+import com.jme3.cinematic.MotionPathListener;
+import com.jme3.cinematic.events.MotionEvent;
 import com.jme3.collision.CollisionResults;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
@@ -55,12 +59,17 @@ public class MainGame extends AbstractAppState{
     private float speed=5;
     private Vector3f walkDirection = new Vector3f(0, 0, 0);
     private Vector3f viewDirection = new Vector3f(0, 0, 1);
-    private Vector3f startPoint = new Vector3f(-10,0,18);
+    private Vector3f regenPoint = new Vector3f(-10,0,18);
     private Vector3f doorDirection = new Vector3f(0, 0, 1);
+    private Vector3f gameViewDirection = new Vector3f(0, 0, 1).negate();
+    private Vector3f maxCamHeight=new Vector3f(0,0,0);
+    private Vector3f camLocation=new Vector3f(0,0,0);
+    private Quaternion camRotation= new Quaternion();
+    float camSpeed=2f;
     
      boolean leftStrafe = false, rightStrafe = false, forward = false, backward = false,
             leftRotate = false, rightRotate = false;
-     boolean doorCollision=false;
+     boolean doorCollision=false, inGame=false, updateCamView=false;
     
     private int lives=3; 
     
@@ -135,7 +144,7 @@ public class MainGame extends AbstractAppState{
         // Add character node to the rootNode
         rootNode.attachChild(characterNode);
         getPhysicsSpace().add(physicsCharacter);
-        physicsCharacter.warp(startPoint);
+        physicsCharacter.warp(regenPoint);
       }
       private void setUpCam(){
             camNode = new CameraNode("CamNode", app.getCamera());
@@ -148,6 +157,7 @@ public class MainGame extends AbstractAppState{
             characterNode.attachChild(camNode);
             //camNode.setEnabled(false);
             //app.setFlycam(true);
+            
       }
       private void setUpDoors(){
           GhostControl ghost = new GhostControl(new BoxCollisionShape(new Vector3f(4,1.5f,0.2f)));
@@ -289,30 +299,13 @@ public class MainGame extends AbstractAppState{
           getPhysicsSpace().add(ghost13);
       }
       
+      
+      Vector3f camChange=new Vector3f();
       @Override
     public void update(float tpf) {
           // Get current forward and left vectors of model by using its rotation
         // to rotate the unit vectors
-        Vector3f modelForwardDir = characterNode.getWorldRotation().mult(Vector3f.UNIT_Z);
-        Vector3f modelLeftDir = characterNode.getWorldRotation().mult(Vector3f.UNIT_X);
-
-        // WalkDirection is global!
-        // You *can* make your character fly with this.
-        walkDirection.set(0, 0, 0);
-        if (leftStrafe) {
-            walkDirection.addLocal(modelLeftDir.mult(speed));
-        } else if (rightStrafe) {
-            walkDirection.addLocal(modelLeftDir.negate().multLocal(speed));
-        }
-        if (forward) {
-            walkDirection.addLocal(modelForwardDir.mult(speed));
-        } else if (backward) {
-            walkDirection.addLocal(modelForwardDir.negate().multLocal(speed));
-        }
-        physicsCharacter.setWalkDirection(walkDirection);
-
-        
-        if (leftRotate) {
+          if (leftRotate) {
             Quaternion rotateL = new Quaternion().fromAngleAxis(FastMath.PI * tpf, Vector3f.UNIT_Y);
             rotateL.multLocal(viewDirection);
         } else if (rightRotate) {
@@ -324,12 +317,55 @@ public class MainGame extends AbstractAppState{
             doorCollision=false;
             
         }
+        if(inGame){
+            viewDirection.set(gameViewDirection);
+        }
         physicsCharacter.setViewDirection(viewDirection);
+          
+          
+        Vector3f modelForwardDir = characterNode.getWorldRotation().mult(Vector3f.UNIT_Z);
+        Vector3f modelLeftDir = characterNode.getWorldRotation().mult(Vector3f.UNIT_X);
+
+        // WalkDirection is global!
+        // You *can* make your character fly with this.
+        walkDirection.set(0, 0, 0);
+        if (leftStrafe) {
+            walkDirection.addLocal(modelLeftDir.mult(speed));
+        } else if (rightStrafe) {
+            walkDirection.addLocal(modelLeftDir.negate().multLocal(speed));
+        }
+        if (forward&&!inGame) {
+            walkDirection.addLocal(modelForwardDir.mult(speed));
+        } else if (backward&&!inGame) {
+            walkDirection.addLocal(modelForwardDir.negate().multLocal(speed));
+        }
+        physicsCharacter.setWalkDirection(walkDirection);
+
+        
+        if(updateCamView){
+            characterNode.detachChild(camNode);
+            rootNode.attachChild(camNode);
+            camNode.setLocalTranslation(camLocation);
+            camNode.setLocalRotation(camRotation);
+            updateCamView=false;
+        }
+        if(inGame){
+            camChange.set(camNode.getLocalTranslation());
+            if(camChange.getY()<=maxCamHeight.getY()){
+                camChange.addLocal(new Vector3f(0,camSpeed*tpf,0));
+            }
+            camNode.setLocalTranslation(camChange);
+            if(physicsCharacter.getPhysicsLocation().distance(camChange)>=12){
+                lives=0;
+            }
+        }
+        
         
         
         if(lives<=0){
-            physicsCharacter.warp(startPoint);
+            physicsCharacter.warp(regenPoint);
             lives=3;
+            camNode.setLocalTranslation(camLocation);
         }
     }
 
@@ -388,6 +424,7 @@ public class MainGame extends AbstractAppState{
             xVar=1;
             zVar=0;
             startPoint.set(2,4.5f,10);
+            gameViewDirection.set(Vector3f.UNIT_X.negate());
             box.updateGeometry(Vector3f.ZERO, 1, 0.25f, 2);
         }else if(numSide==2){
             //10,1,8   ---z
@@ -396,6 +433,7 @@ public class MainGame extends AbstractAppState{
             xVar=0;
             zVar=-1;
             startPoint.set(10,4.5f,8);
+            gameViewDirection.set(Vector3f.UNIT_Z);
             box.updateGeometry(Vector3f.ZERO, 2, 0.25f, 1);
         }else if(numSide==3){
             //[10.0, 1.0, -2.0] ---z
@@ -404,6 +442,7 @@ public class MainGame extends AbstractAppState{
             xVar=0;
             zVar=-1;
             startPoint.set(10,4.5f,-2);
+            gameViewDirection.set(Vector3f.UNIT_Z);
             box.updateGeometry(Vector3f.ZERO, 2, 0.25f, 1);
         }else if(numSide==4){
             //[8.0, 1.0, -10.0] ---x
@@ -412,6 +451,7 @@ public class MainGame extends AbstractAppState{
             xVar=-1;
             zVar=0;
             startPoint.set(8,4.5f,-10);
+            gameViewDirection.set(Vector3f.UNIT_X);
             box.updateGeometry(Vector3f.ZERO, 1, 0.25f, 2);
         }else if(numSide==5){
             //[-2.0, 1.0, -10.0] ---x
@@ -420,6 +460,7 @@ public class MainGame extends AbstractAppState{
             xVar=-1;
             zVar=0;
             startPoint.set(-2,4.5f,-10);
+            gameViewDirection.set(Vector3f.UNIT_X);
             box.updateGeometry(Vector3f.ZERO, 1, 0.25f, 2);
         }else if(numSide==6){
             //[-10.0, 1.0, -8.0] +++z
@@ -428,6 +469,7 @@ public class MainGame extends AbstractAppState{
             xVar=0;
             zVar=1;
             startPoint.set(-10,4.5f,-8);
+            gameViewDirection.set(Vector3f.UNIT_Z.negate());
             box.updateGeometry(Vector3f.ZERO, 2, 0.25f, 1);
         }
         
@@ -658,6 +700,56 @@ public class MainGame extends AbstractAppState{
         }
       
     }
+    public void generateUserStuffs(int numSide){
+        
+        if(numSide==1){
+            //2,1,10   +++x
+            regenPoint.set(5f,0.5f,11.5f);
+            gameViewDirection.set(Vector3f.UNIT_Z.negate());
+            camRotation.lookAt(Vector3f.UNIT_Z.negate(), Vector3f.UNIT_Y);
+            camLocation.set(regenPoint.add(0,0,7));
+            maxCamHeight.set(camLocation.add(0, 24, 0));
+            
+            
+        }else if(numSide==2){
+            //10,1,8   ---z
+            regenPoint.set(11.5f,1f,5);
+            gameViewDirection.set(Vector3f.UNIT_X.negate());
+            camRotation.lookAt(Vector3f.UNIT_X.negate(), Vector3f.UNIT_Y);
+            camLocation.set(regenPoint.add(7,0,0));
+            maxCamHeight.set(camLocation.add(0, 24, 0));
+        }else if(numSide==3){
+            //[10.0, 1.0, -2.0] ---z
+            regenPoint.set(11.5f,1f,-5);
+            gameViewDirection.set(Vector3f.UNIT_X.negate());
+            camRotation.lookAt(Vector3f.UNIT_X.negate(), Vector3f.UNIT_Y);
+            camLocation.set(regenPoint.add(7,0,0));
+            maxCamHeight.set(camLocation.add(0, 34.5f, 0));
+        }else if(numSide==4){
+            //[8.0, 1.0, -10.0] ---x
+            regenPoint.set(5,1f,-11.5f);
+            gameViewDirection.set(Vector3f.UNIT_Z);
+            camRotation.lookAt(Vector3f.UNIT_Z, Vector3f.UNIT_Y);
+            camLocation.set(regenPoint.add(0,0,-7));
+            maxCamHeight.set(camLocation.add(0, 34.5f, 0));
+        }else if(numSide==5){
+            //[-2.0, 1.0, -10.0] ---x
+           regenPoint.set(-5,1f,-11.5f);
+            gameViewDirection.set(Vector3f.UNIT_Z);
+            camRotation.lookAt(Vector3f.UNIT_Z, Vector3f.UNIT_Y);
+            camLocation.set(regenPoint.add(0,0,-7));
+            maxCamHeight.set(camLocation.add(0, 48.5f, 0));
+        }else if(numSide==6){
+            //[-10.0, 1.0, -8.0] +++z
+            regenPoint.set(-11.5f,1f,-5);
+            gameViewDirection.set(Vector3f.UNIT_X);
+            camRotation.lookAt(Vector3f.UNIT_X, Vector3f.UNIT_Y);
+            camLocation.set(regenPoint.add(-7,0,0));
+            maxCamHeight.set(camLocation.add(0, 48.5f, 0));
+        }
+        updateCamView=true;
+        
+    }
     
     public void emptyNodes(){
         if(windowsNode.getControl(RigidBodyControl.class)!=null){
@@ -674,8 +766,20 @@ public class MainGame extends AbstractAppState{
         generateWindows(sideNumber, numLedge);
         generateDirtyWindows(sideNumber, numDirtyWindows);
         generateObjectDropper(sideNumber, babyDropper);
+        generateUserStuffs(sideNumber);
     }
-
+    public void cleanupLevel(){
+        setLevel(0);
+        emptyNodes();
+        setInGame(false);
+        camNode.setLocalTranslation(new Vector3f(0, 2, -6));
+        Quaternion quat = new Quaternion();
+        // These coordinates are local, the camNode is attached to the character node!
+        quat.lookAt(Vector3f.UNIT_Z, Vector3f.UNIT_Y);
+        camNode.setLocalRotation(quat);
+        rootNode.detachChild(camNode);
+        characterNode.attachChild(camNode);
+    }
     public void setViewDirection(Vector3f dir){
         viewDirection=dir;
         physicsCharacter.setViewDirection(dir);
@@ -689,8 +793,8 @@ public class MainGame extends AbstractAppState{
     public PhysicsSpace getPhysicsSpace(){
         return bulletAppState.getPhysicsSpace();
     }
-    public void setStartPoint(Vector3f startPoint) {
-        this.startPoint = startPoint;
+    public void setRegenPoint(Vector3f startPoint) {
+        this.regenPoint = startPoint;
     }
     public BetterCharacterControl getPhysicsCharacter() {
         return physicsCharacter;
@@ -743,6 +847,15 @@ public class MainGame extends AbstractAppState{
     public void setDoorCollision(boolean doorCollision) {
         this.doorCollision = doorCollision;
     }
+    public boolean isInGame() {
+        return inGame;
+    }
+    public void setInGame(boolean doorCollision) {
+        this.inGame = doorCollision;
+    }
+    public void setGameDirection(Vector3f dir) {
+        this.gameViewDirection = dir;
+    }
     public void setDoorDirection(Vector3f dir) {
         this.doorDirection = dir;
     }
@@ -753,6 +866,9 @@ public class MainGame extends AbstractAppState{
 
     public int getLevel() {
         return level;
+    }
+    public void regen(){
+        physicsCharacter.warp(regenPoint);
     }
     
 }

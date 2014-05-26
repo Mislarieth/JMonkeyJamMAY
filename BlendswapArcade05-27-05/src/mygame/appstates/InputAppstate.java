@@ -32,16 +32,16 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
                 new KeyTrigger(KeyInput.KEY_X));
         app.getInputManager().addMapping("Rotate Left",
                 new KeyTrigger(KeyInput.KEY_J),
-                new KeyTrigger(KeyInput.KEY_LEFT));
+                new KeyTrigger(KeyInput.KEY_A));
         app.getInputManager().addMapping("Rotate Right",
                 new KeyTrigger(KeyInput.KEY_L),
-                new KeyTrigger(KeyInput.KEY_RIGHT));
+                new KeyTrigger(KeyInput.KEY_D));
         app.getInputManager().addMapping("Walk Forward",
                 new KeyTrigger(KeyInput.KEY_I),
-                new KeyTrigger(KeyInput.KEY_UP));
+                new KeyTrigger(KeyInput.KEY_W));
         app.getInputManager().addMapping("Walk Backward",
                 new KeyTrigger(KeyInput.KEY_K),
-                new KeyTrigger(KeyInput.KEY_DOWN));
+                new KeyTrigger(KeyInput.KEY_S));
         app.getInputManager().addMapping("Jump",
                 new KeyTrigger(KeyInput.KEY_F),
                 new KeyTrigger(KeyInput.KEY_SPACE));
@@ -62,11 +62,13 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
     public void onAction(String binding, boolean value, float tpf) {
         if (binding.equals("Strafe Left")) {
             if(app.getGameScreen()==1){
-                if (value) {
-                app.getMainGameAppstate().setLeftStrafe(true);
-            } else {
-                app.getMainGameAppstate().setLeftStrafe(false);
-            }
+                if(app.getStateManager().getState(MainGame.class).getLevel()!=0){
+                    if (value) {
+                        app.getMainGameAppstate().setLeftStrafe(true);
+                    } else {
+                        app.getMainGameAppstate().setLeftStrafe(false);
+                    }
+                }
             }
             
         } else if (binding.equals("Strafe Right")) {
@@ -79,33 +81,65 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
             }
         } else if (binding.equals("Rotate Left")) {
             if(app.getGameScreen()==1){
-                if (value) {
-                    app.getMainGameAppstate().setLeftRotate(true);
-                } else {
-                    app.getMainGameAppstate().setLeftRotate(false);
+                if(app.getStateManager().getState(MainGame.class).getLevel()==0){
+                    app.getMainGameAppstate().setLeftStrafe(false);
+                    if (value) {
+                        app.getMainGameAppstate().setLeftRotate(true);
+                    } else {
+                        app.getMainGameAppstate().setLeftRotate(false);
+                    }
+                }else{
+                    if (value) {
+                        app.getMainGameAppstate().setLeftStrafe(true);
+                    } else {
+                        app.getMainGameAppstate().setLeftStrafe(false);
+                    }
                 }
             }
         } else if (binding.equals("Rotate Right")) {
             if(app.getGameScreen()==1){
-                if (value) {
-                    app.getMainGameAppstate().setRightRotate(true);
-                } else {
-                    app.getMainGameAppstate().setRightRotate(false);
+                if(app.getStateManager().getState(MainGame.class).getLevel()==0){
+                    app.getMainGameAppstate().setRightStrafe(false);
+                    if (value) {
+                        app.getMainGameAppstate().setRightRotate(true);
+                    } else {
+                        app.getMainGameAppstate().setRightRotate(false);
+                    }
+                }else{
+                    if (value) {
+                        app.getMainGameAppstate().setRightStrafe(true);
+                    } else {
+                        app.getMainGameAppstate().setRightStrafe(false);
+                    }
                 }
             }
         } else if (binding.equals("Walk Forward")) {
             if(app.getGameScreen()==1){
-                if (value) {
-                    app.getMainGameAppstate().setForward(true);
-                } else {
+                if(app.getStateManager().getState(MainGame.class).getLevel()==0){
+                    if (value) {
+                        app.getMainGameAppstate().setForward(true);
+                        if(app.getStateManager().getState(MainGame.class).getLevel()!=0){
+                            app.getMainGameAppstate().setForward(false);
+                        }
+                    } else {
+                        app.getMainGameAppstate().setForward(false);
+                    }
+                }else{
                     app.getMainGameAppstate().setForward(false);
                 }
             }
         } else if (binding.equals("Walk Backward")) {
             if(app.getGameScreen()==1){
-                if (value) {
-                    app.getMainGameAppstate().setBackward(true);
-                } else {
+                if(app.getStateManager().getState(MainGame.class).getLevel()==0){
+                    if (value) {
+                        app.getMainGameAppstate().setBackward(true);
+                        if(app.getStateManager().getState(MainGame.class).getLevel()!=0){
+                            app.getMainGameAppstate().setBackward(false);
+                        }
+                    } else {
+                        app.getMainGameAppstate().setBackward(false);
+                    }
+                }else{
                     app.getMainGameAppstate().setBackward(false);
                 }
             }
@@ -138,7 +172,13 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
                 }
             }
             
-        }
+        }else if (binding.equals("Lock View")) {
+            if(app.getGameScreen()==1){
+                app.getStateManager().getState(MainGame.class).setLives(0);
+                  
+            }
+            
+        } 
     }
     
     @Override

@@ -58,7 +58,6 @@ public class StartScreenAppstate extends AbstractAppState{
     
     private MotionPath path;
     private MotionEvent cameraMotionControl;
-    private ChaseCamera chaser;
     private CameraNode camNode;
     private Vector3f center= new Vector3f(0,0,0);
     private Vector3f bottom= new Vector3f(0,0,0);
@@ -113,6 +112,7 @@ public class StartScreenAppstate extends AbstractAppState{
         camNode = new CameraNode("CamNode", app.getCamera());
         camNode.setControlDir(CameraControl.ControlDirection.SpatialToCamera);
         camNode.setLocalTranslation(new Vector3f(0, 2, -6));
+        
         path = new MotionPath();
         path.setCycle(true);
         path.addWayPoint(new Vector3f(20, 6, 20));
