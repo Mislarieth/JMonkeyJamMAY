@@ -91,7 +91,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getStateManager().getState(MainGame.class).getPhysicsCharacter().warp(node.getLocalTranslation().add(new Vector3f(0,6f,1.5f)));
                         app.getStateManager().getState(MainGame.class).setDoorCollision(true);
                         app.getStateManager().getState(MainGame.class).setDoorDirection(Vector3f.UNIT_Z);
-
+                        app.getMainGameAppstate().setInShop(true);
                     }
                 } else if ( nodeBName.equals("LeftDoorBottom")) {
                     Spatial node = (Node) event.getNodeB();
@@ -99,7 +99,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getStateManager().getState(MainGame.class).getPhysicsCharacter().warp(node.getLocalTranslation().add(new Vector3f(0,6f,1.5f)));
                         app.getStateManager().getState(MainGame.class).setDoorCollision(true);
                         app.getStateManager().getState(MainGame.class).setDoorDirection(Vector3f.UNIT_Z);
-
+                        app.getMainGameAppstate().setInShop(true);
                     }
 
                 }
@@ -109,6 +109,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getStateManager().getState(MainGame.class).getPhysicsCharacter().warp(node.getLocalTranslation().add(new Vector3f(0,-8,1.5f)));
                         app.getStateManager().getState(MainGame.class).setDoorCollision(true);
                         app.getStateManager().getState(MainGame.class).setDoorDirection(Vector3f.UNIT_Z);
+                        app.getMainGameAppstate().setInShop(false);
                     }
 
 
@@ -118,6 +119,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getStateManager().getState(MainGame.class).getPhysicsCharacter().warp(node.getLocalTranslation().add(new Vector3f(0,-8,1.5f)));
                         app.getStateManager().getState(MainGame.class).setDoorCollision(true);
                         app.getStateManager().getState(MainGame.class).setDoorDirection(Vector3f.UNIT_Z);
+                        app.getMainGameAppstate().setInShop(false);
                     }
                 }
 
@@ -127,7 +129,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getStateManager().getState(MainGame.class).getPhysicsCharacter().warp(node.getLocalTranslation().add(new Vector3f(-1.5f,6f,0)));
                         app.getStateManager().getState(MainGame.class).setDoorCollision(true);
                         app.getStateManager().getState(MainGame.class).setDoorDirection(Vector3f.UNIT_X.mult(-1));
-
+                        app.getMainGameAppstate().setInShop(true);
                     }
                 } else if (nodeBName.equals("RightDoorBottom")) {
                     Spatial node = (Node) event.getNodeB();
@@ -136,7 +138,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
 
                         app.getStateManager().getState(MainGame.class).setDoorCollision(true);
                         app.getStateManager().getState(MainGame.class).setDoorDirection(Vector3f.UNIT_X.mult(-1));
-
+                        app.getMainGameAppstate().setInShop(true);
                     }
                 }
                 if (nodeAName.equals("RightDoorTop")) {
@@ -145,7 +147,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getStateManager().getState(MainGame.class).getPhysicsCharacter().warp(node.getLocalTranslation().add(new Vector3f(-1.5f,-8f,0)));
                         app.getStateManager().getState(MainGame.class).setDoorCollision(true);
                         app.getStateManager().getState(MainGame.class).setDoorDirection(Vector3f.UNIT_X.mult(-1));
-
+                        app.getMainGameAppstate().setInShop(false);
                     }
                 } else if (nodeBName.equals("RightDoorTop")) {
                     Spatial node = (Node) event.getNodeB();
@@ -153,7 +155,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getStateManager().getState(MainGame.class).getPhysicsCharacter().warp(node.getLocalTranslation().add(new Vector3f(-1.5f,-8f,0)));
                         app.getStateManager().getState(MainGame.class).setDoorCollision(true);
                         app.getStateManager().getState(MainGame.class).setDoorDirection(Vector3f.UNIT_X.mult(-1));
-
+                        app.getMainGameAppstate().setInShop(false);
                     }
                 }
                 if (nodeAName.equals("Side1Door")||nodeAName.equals("Side2Door")||nodeAName.equals("Side3Door")) {
@@ -161,12 +163,14 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getStateManager().getState(MainGame.class).getPhysicsCharacter().warp(new Vector3f(-1.5f,7,5));
                         app.getStateManager().getState(MainGame.class).setDoorCollision(true);
                         app.getStateManager().getState(MainGame.class).setDoorDirection(Vector3f.UNIT_X.mult(-1));
+                        app.getMainGameAppstate().setInShop(true);
                     }
                 } else if (nodeBName.equals("Side1Door")||nodeBName.equals("Side2Door")||nodeBName.equals("Side3Door")) {
                     if (nodeAName.equals("character node")){
                         app.getStateManager().getState(MainGame.class).getPhysicsCharacter().warp(new Vector3f(-1.5f,7,5));
                         app.getStateManager().getState(MainGame.class).setDoorCollision(true);
                         app.getStateManager().getState(MainGame.class).setDoorDirection(Vector3f.UNIT_X.mult(-1));
+                        app.getMainGameAppstate().setInShop(true);
 
                     }
                 }
@@ -178,6 +182,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getMainGameAppstate().generateSide(1,10,10,4);
                         app.getMainGameAppstate().setInGame(true);
                         app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setZ(11.5f));
+                        app.getMainGameAppstate().setCamSpeed(1.5f);
                     }
                 } else if (nodeBName.equals("Level1Bottom")&&app.getStateManager().getState(MainGame.class).getLevel()==0) {
                     if (nodeAName.equals("character node")){
@@ -185,6 +190,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getMainGameAppstate().generateSide(1,10,10,4);
                         app.getMainGameAppstate().setInGame(true);
                         app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setZ(11.5f));
+                        app.getMainGameAppstate().setCamSpeed(1.5f);
                     }
                 }
                 if (nodeAName.equals("Level1Top")) {
@@ -213,6 +219,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getMainGameAppstate().generateSide(2,10,10,4);
                         app.getMainGameAppstate().setInGame(true);
                         app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setX(11.5f));
+                        app.getMainGameAppstate().setCamSpeed(2);
                     }
                 } else if (nodeBName.equals("Level2Bottom")&&app.getStateManager().getState(MainGame.class).getLevel()==0) {
                     if (nodeAName.equals("character node")){
@@ -220,6 +227,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getMainGameAppstate().generateSide(2,10,10,4);
                         app.getMainGameAppstate().setInGame(true);
                         app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setX(11.5f));
+                        app.getMainGameAppstate().setCamSpeed(2);
                     }
                 }
                 if (nodeAName.equals("Level2Top")) {
@@ -227,6 +235,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                          if(app.getMainGameAppstate().isInGame()){
                             app.getMainGameAppstate().cleanupLevel();
                             app.getMainGameAppstate().addPoints(750);
+                            app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.set(charLoc.getX(), 22, 8));
                          }
                     }
                 } else if (nodeBName.equals("Level2Top")) {
@@ -234,6 +243,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                          if(app.getMainGameAppstate().isInGame()){
                             app.getMainGameAppstate().cleanupLevel();
                             app.getMainGameAppstate().addPoints(750);
+                            app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.set(8, 22, charLoc.getZ()));
                          }
                     }
                 }
@@ -245,6 +255,8 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getMainGameAppstate().generateSide(3,10,10,4);
                         app.getMainGameAppstate().setInGame(true);
                         app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setX(11.5f));
+                    
+                        app.getMainGameAppstate().setCamSpeed(1.5f);
                     }
                 } else if (nodeBName.equals("Level3Bottom")&&app.getStateManager().getState(MainGame.class).getLevel()==0) {
                     if (nodeAName.equals("character node")){
@@ -252,6 +264,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getMainGameAppstate().generateSide(3,10,10,4);
                         app.getMainGameAppstate().setInGame(true);
                         app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setX(11.5f));
+                        app.getMainGameAppstate().setCamSpeed(1.5f);
                     }
                 }
                 if (nodeAName.equals("Level3Top")) {
@@ -259,6 +272,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                          if(app.getMainGameAppstate().isInGame()){
                             app.getMainGameAppstate().cleanupLevel();
                             app.getMainGameAppstate().addPoints(1000);
+                            app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.set(8, 32, charLoc.getZ()));
                          }
                     }
                 } else if (nodeBName.equals("Level3Top")) {
@@ -266,6 +280,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                          if(app.getMainGameAppstate().isInGame()){
                             app.getMainGameAppstate().cleanupLevel();
                             app.getMainGameAppstate().addPoints(1000);
+                            app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.set(8, 32, charLoc.getZ()));
                          }
                     }
                 }
@@ -277,6 +292,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getMainGameAppstate().generateSide(4,10,10,4);
                         app.getMainGameAppstate().setInGame(true);
                         app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setZ(-11.5f));
+                        app.getMainGameAppstate().setCamSpeed(2f);
                     }
                 } else if (nodeBName.equals("Level4Bottom")&&app.getStateManager().getState(MainGame.class).getLevel()==0) {
                     if (nodeAName.equals("character node")){
@@ -284,6 +300,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getMainGameAppstate().generateSide(4,10,10,4);
                         app.getMainGameAppstate().setInGame(true);
                         app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setZ(-11.5f));
+                        app.getMainGameAppstate().setCamSpeed(2f);
                     }
                 }
                 if (nodeAName.equals("Level4Top")) {
@@ -291,6 +308,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                          if(app.getMainGameAppstate().isInGame()){
                             app.getMainGameAppstate().cleanupLevel();
                             app.getMainGameAppstate().addPoints(1250);
+                            app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.set(charLoc.getX(), 32, -8));
                          }
                     }
                 } else if (nodeBName.equals("Level4Top")) {
@@ -298,6 +316,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                          if(app.getMainGameAppstate().isInGame()){
                             app.getMainGameAppstate().cleanupLevel();
                             app.getMainGameAppstate().addPoints(1250);
+                            app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.set(charLoc.getX(), 32, -8));
                          }
                     }
                 }
@@ -311,6 +330,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getMainGameAppstate().generateSide(5,10,10,4);
                         app.getMainGameAppstate().setInGame(true);
                         app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setZ(-11.5f));
+                        app.getMainGameAppstate().setCamSpeed(1.5f);
                     }
                 } else if (nodeBName.equals("Level5Bottom")&&app.getStateManager().getState(MainGame.class).getLevel()==0) {
                     if (nodeAName.equals("character node")){
@@ -318,6 +338,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getMainGameAppstate().generateSide(5,10,10,4);
                         app.getMainGameAppstate().setInGame(true);
                         app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setZ(-11.5f));
+                        app.getMainGameAppstate().setCamSpeed(1.5f);
                     }
                 }
                 if (nodeAName.equals("Level5Top")) {
@@ -325,6 +346,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                          if(app.getMainGameAppstate().isInGame()){
                             app.getMainGameAppstate().cleanupLevel();
                             app.getMainGameAppstate().addPoints(1500);
+                            app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.set(charLoc.getX(), 46, -8));
                          }
                     }
                 } else if (nodeBName.equals("Level5Top")) {
@@ -332,6 +354,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                          if(app.getMainGameAppstate().isInGame()){
                             app.getMainGameAppstate().cleanupLevel();
                             app.getMainGameAppstate().addPoints(1500);
+                            app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.set(charLoc.getX(), 46, -8));
                          }
                     }
                 }
@@ -343,6 +366,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getMainGameAppstate().generateSide(6,10,10,4);
                         app.getMainGameAppstate().setInGame(true);
                         app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setX(-11.5f));
+                        app.getMainGameAppstate().setCamSpeed(2f);
                     }
                 } else if (nodeBName.equals("Level6Bottom")&&app.getStateManager().getState(MainGame.class).getLevel()==0) {
                     if (nodeAName.equals("character node")){
@@ -350,6 +374,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         app.getMainGameAppstate().generateSide(6,10,10,4);
                         app.getMainGameAppstate().setInGame(true);
                         app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.setX(-11.5f));
+                        app.getMainGameAppstate().setCamSpeed(2f);
                     }
                 }
                 if (nodeAName.equals("Level6Top")) {
@@ -357,6 +382,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                         if(app.getMainGameAppstate().isInGame()){
                             app.getMainGameAppstate().cleanupLevel();
                             app.getMainGameAppstate().addPoints(2000);
+                            app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.set(-8, 46, charLoc.getZ()));
                         }
                     }
                 } else if (nodeBName.equals("Level6Top")) {
@@ -364,6 +390,7 @@ public class CollisionDetector extends AbstractAppState implements PhysicsCollis
                          if(app.getMainGameAppstate().isInGame()){
                             app.getMainGameAppstate().cleanupLevel();
                             app.getMainGameAppstate().addPoints(2000);
+                            app.getMainGameAppstate().getPhysicsCharacter().warp(charLoc.set(-8, 46, charLoc.getZ()));
                          }
                     }
                 }

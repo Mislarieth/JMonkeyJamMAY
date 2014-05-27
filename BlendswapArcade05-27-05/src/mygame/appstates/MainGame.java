@@ -16,6 +16,9 @@ import com.jme3.bullet.util.CollisionShapeFactory;
 import com.jme3.collision.CollisionResults;
 import com.jme3.effect.ParticleEmitter;
 import com.jme3.effect.ParticleMesh;
+import com.jme3.font.BitmapFont;
+import com.jme3.font.BitmapText;
+import com.jme3.light.DirectionalLight;
 import com.jme3.material.Material;
 import com.jme3.material.RenderState;
 import com.jme3.math.ColorRGBA;
@@ -30,6 +33,7 @@ import com.jme3.scene.Geometry;
 import com.jme3.scene.Node;
 import com.jme3.scene.control.CameraControl;
 import com.jme3.scene.shape.Box;
+import com.jme3.ui.Picture;
 import java.util.ArrayList;
 import java.util.Random;
 import mygame.Main;
@@ -49,8 +53,8 @@ public class MainGame extends AbstractAppState{
     
     private BetterCharacterControl physicsCharacter;
     private CharacterAnimControl characterAnimControl;
-    private Node windowsNode, dirtyWindowsNode,objectDropNode, doorNode, levelNode;
-    private Node characterNode;
+    private Node windowsNode, dirtyWindowsNode,objectDropNode, doorNode, levelNode, shopNode;
+    private Node characterNode,jetPackNode;
     private CameraNode camNode;
     boolean rotate = false;
     private float speed=5;
@@ -67,6 +71,7 @@ public class MainGame extends AbstractAppState{
     private float maxParticleTime=3;
     private float curParticleTime=0;
     private float curObjectDropParticleTime=0;
+    private boolean inShop=false;
     
     
     private Material mat_red;
@@ -84,9 +89,11 @@ public class MainGame extends AbstractAppState{
      * once you hit top ghost control&&level!=0 you completed it
      */
     private int numPots=2, numSammiches=2;
-    private boolean hasJetpack=true, usePot=false,useSammich=false;
+    private boolean hasJetpack=false, usePot=false,useSammich=false;
     private float potTime=0,sammichTime=0;
     private int numPoints=0;
+    private BitmapText pointText,sammichText,potText, livesText;
+    private Picture hudPic;
     
     
     public MainGame(){
@@ -105,7 +112,11 @@ public class MainGame extends AbstractAppState{
           Node mainNode=(Node) rootNode.getChild("Main Scene");
           mainNode.addControl(new RigidBodyControl(0));
           getPhysicsSpace().add(mainNode);
-          
+              /** A white, directional light source */ 
+            DirectionalLight sun = new DirectionalLight();
+            sun.setDirection((new Vector3f(-0.5f, -0.5f, 0.5f)).normalizeLocal());
+            sun.setColor(ColorRGBA.White); 
+          rootNode.addLight(sun);
           
           setUpNodes();
           setUpCharacter();
@@ -113,7 +124,8 @@ public class MainGame extends AbstractAppState{
           setUpDoors();
           setUpLevels();
           setUpParticles();
-          
+          setUpShop();
+          setUpGui();
           
        
     }
@@ -136,6 +148,9 @@ public class MainGame extends AbstractAppState{
           levelNode=new Node();
           levelNode.setName("Level Node");
           rootNode.attachChild(levelNode);
+          shopNode=new Node();
+          shopNode.setName("Shop Node");
+          rootNode.attachChild(shopNode);
       }
       private void setUpCharacter(){
           characterNode = new Node("character node");
@@ -156,6 +171,13 @@ public class MainGame extends AbstractAppState{
         characterNode.attachChild(model);
         characterAnimControl = new CharacterAnimControl(model, physicsCharacter);
         characterNode.addControl(characterAnimControl);
+        
+        Quaternion ROLL090  = new Quaternion().fromAngleAxis(3*FastMath.PI/2,   new Vector3f(0,1,0));
+        jetPackNode = (Node) app.getAssetManager().loadModel("Models/jetPack/jetPackblend.j3o");
+        jetPackNode.scale(0.25f);
+        jetPackNode.rotate(ROLL090);
+        jetPackNode.setLocalTranslation(new Vector3f(0,1,-0.5f));
+        
         
         // Add character node to the rootNode
         rootNode.attachChild(characterNode);
@@ -370,7 +392,69 @@ public class MainGame extends AbstractAppState{
         //invincibility.getParticleInfluencer().setVelocityVariation(.60f);
         invincibility.killAllParticles();
       }
-      
+      public void setUpShop(){
+          Quaternion ROLL090  = new Quaternion().fromAngleAxis(FastMath.PI/2,   new Vector3f(0,1,0));
+          Node model = (Node) app.getAssetManager().loadModel("Models/jetPack/jetPackblend.j3o");
+          model.setName("Jetpack"); 
+          model.scale(0.5f);
+          model.rotate(ROLL090);
+          model.setLocalTranslation(new Vector3f(-6.5f,8f,9));
+          shopNode.attachChild(model);
+          
+          Node model1 = (Node) app.getAssetManager().loadModel("Models/Sammich/Sammich.j3o");
+          model1.setName("Sammich"); 
+          model1.scale(0.5f);
+          //model1.rotate(ROLL090);
+          model1.setLocalTranslation(new Vector3f(-5.5f,8f,9));
+          shopNode.attachChild(model1);
+          
+          Node model2 = (Node) app.getAssetManager().loadModel("Models/pot/pot.j3o");
+          model2.setName("Pot"); 
+          model2.scale(0.5f);
+          //model1.rotate(ROLL090);
+          model2.setLocalTranslation(new Vector3f(-4.5f,8f,9));
+          shopNode.attachChild(model2);
+          
+          
+          
+      }
+      public void setUpGui(){
+          hudPic= new Picture("HUD Picture");
+          hudPic.setImage(app.getAssetManager(), "Textures/hud.png", true);
+          hudPic.setWidth(525);
+          hudPic.setHeight(65);
+          hudPic.setPosition(0,0);
+          app.getGuiNode().attachChild(hudPic);
+          
+          BitmapFont myFont = app.getAssetManager().loadFont("Interface/Fonts/Console.fnt");
+          sammichText = new BitmapText(myFont,false);
+          sammichText.setSize(50);
+          sammichText.setColor(ColorRGBA.White);          
+          sammichText.setText(Integer.toString(numSammiches));
+          sammichText.setLocalTranslation(160, sammichText.getLineHeight(), 0);
+          app.getGuiNode().attachChild(sammichText);
+          
+          potText = new BitmapText(myFont,false);
+          potText.setSize(50);
+          potText.setColor(ColorRGBA.White);          
+          potText.setText(Integer.toString(numPots));
+          potText.setLocalTranslation(340, potText.getLineHeight(), 0);
+          app.getGuiNode().attachChild(potText);
+          
+           pointText = new BitmapText(myFont,false);
+           pointText.setSize(30);
+           pointText.setColor(ColorRGBA.White);          
+           pointText.setText(Integer.toString(numPoints));
+           pointText.setLocalTranslation(530,  40, 0);
+          app.getGuiNode().attachChild( pointText);
+          
+          livesText = new BitmapText(myFont,false);
+           livesText.setSize(50);
+           livesText.setColor(ColorRGBA.White);          
+           livesText.setText("Lives: "+Integer.toString(lives));
+           livesText.setLocalTranslation(0, app.getSettings().getHeight(), 0);
+          app.getGuiNode().attachChild( livesText);
+      }
       
       Vector3f camChange=new Vector3f();
       @Override
@@ -482,6 +566,10 @@ public class MainGame extends AbstractAppState{
             lives=3;
             camNode.setLocalTranslation(camLocation);
         }
+        sammichText.setText(Integer.toString(numSammiches));
+        potText.setText(Integer.toString(numPots));
+        pointText.setText(Integer.toString(numPoints));
+        livesText.setText("Lives: "+Integer.toString(lives));
     }
 
     
@@ -521,9 +609,10 @@ public class MainGame extends AbstractAppState{
         int zVar=1;
         Box box=new Box();
         int rows=1,numPerRows=3;
-        Material mat1 = new Material(app.getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
+        Material mat1 = new Material(app.getAssetManager(), "Common/MatDefs/Light/Lighting.j3md");
         //mat1.setBoolean("UseMaterialColors", true);
-        mat1.setColor("Color", new ColorRGBA(0.5764706f,0.42352942f,0.41960785f,1));
+        mat1.setColor("Diffuse", new ColorRGBA(0.5764706f,0.42352942f,0.41960785f,1));
+        mat1.setBoolean("UseMaterialColors", true);
         RigidBodyControl rbc = new RigidBodyControl(0);
         /* A colored lit cube. Needs light source! */ 
         
@@ -721,9 +810,9 @@ public class MainGame extends AbstractAppState{
         int xVar=1;
         int zVar=1;
         int rows=0,numPerRows=3;
-        Box box=new Box(0.25f,0.25f,0.25f);
+        /*Box box=new Box(0.25f,0.25f,0.25f);
         Material mat1 = new Material(app.getAssetManager(), "Common/MatDefs/Misc/Unshaded.j3md");
-        mat1.setColor("Color", ColorRGBA.Blue);
+        mat1.setColor("Color", ColorRGBA.Blue);*/
         
          //windowsNode.removeControl(RigidBodyControl.class);
          objectDropNode.detachAllChildren();
@@ -798,14 +887,12 @@ public class MainGame extends AbstractAppState{
                    Vector3f pt= animPoint.add(new Vector3f(xVar*coord.getX()*spaceX,coord.getY()*spaceY,zVar*coord.getX()*spaceX));
                    //Spatial dirtyWindow =  assetManager.loadModel("Models/dirtyWindow/dirtyWindow.j3o");
 
-                   int dropTime=rand.nextInt(6)+1;
 
-                   Geometry objectDropper = new Geometry("Window_"+numSide+"_"+coord.getY()+"_"+coord.getX(), box);
+                   Node objectDropper = new Node("Window_"+numSide+"_"+coord.getY()+"_"+coord.getX());
                    objectDropper.setLocalTranslation(pt);
-                   objectDropper.setMaterial(mat1);
 
                    objectDropNode.attachChild(objectDropper);
-                   BabyDropperControl bdc = new BabyDropperControl(app.getAssetManager(),rootNode,app.getPhysicsSpace(),dropPt,dropTime);
+                   BabyDropperControl bdc = new BabyDropperControl(app.getAssetManager(),rootNode,app.getPhysicsSpace(),dropPt);
                    objectDropper.addControl(bdc);
                }else{
                     System.out.println("Bollocks.");
@@ -903,6 +990,52 @@ public class MainGame extends AbstractAppState{
                 dirtyWindowsNode.detachChild(results.getClosestCollision().getGeometry());
                 addPoints(100);
                 
+            }
+            
+        }
+    }
+     public void shop(){
+        
+        
+        
+        results.clear();
+        Vector2f click2d = app.getInputManager().getCursorPosition();
+        Vector3f click3d = app.getCamera().getWorldCoordinates(new Vector2f(click2d.x, click2d.y), 0f).clone();
+        Vector3f dir = app.getCamera().getWorldCoordinates(new Vector2f(click2d.x, click2d.y), 1f).subtractLocal(click3d).normalizeLocal();
+        Ray ray = new Ray(click3d, dir);
+        shopNode.collideWith(ray, results);
+        if (results.size() > 0) {
+            if(results.getClosestCollision().getGeometry().getName().equals("Jetpack")){
+                if(hasJetpack==false&&numPoints>=10000){
+                    hasJetpack=true;
+                    numPoints-=10000;
+                    characterNode.attachChild(jetPackNode);
+                    System.out.println("Jetpack");
+                }else{
+                    System.out.println("Jetpack insufficient funds :(");
+                }
+                
+                //todo: insufficient funds
+            }else if(results.getClosestCollision().getGeometry().getName().equals("Pot")){
+                if(numPoints>=500){
+                    numPots++;
+                    numPoints-=500;
+                    System.out.println("bought" +numPots);
+                }else{
+                    System.out.println("Pot insufficient funds :(");
+                }
+                
+                //todo: insufficient funds
+            }else if(results.getClosestCollision().getGeometry().getName().equals("Sammich")){
+                if(numPoints>=1000){
+                    numSammiches++;
+                    numPoints-=1000;
+                    System.out.println("bought"+numSammiches);
+                }else{
+                    System.out.println("Sammich insufficient funds :(");
+                }
+                
+                //todo: insufficient funds
             }
             
         }
@@ -1061,6 +1194,22 @@ public class MainGame extends AbstractAppState{
 
     public void setUseSammich(boolean useSammich) {
         this.useSammich = useSammich;
+    }
+
+    public boolean getInShop() {
+        return inShop;
+    }
+
+    public void setInShop(boolean inShop) {
+        this.inShop = inShop;
+    }
+
+    public float getCamSpeed() {
+        return camSpeed;
+    }
+
+    public void setCamSpeed(float camSpeed) {
+        this.camSpeed = camSpeed;
     }
 
     

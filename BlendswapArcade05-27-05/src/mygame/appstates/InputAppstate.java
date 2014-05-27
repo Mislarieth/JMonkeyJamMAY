@@ -11,6 +11,7 @@ import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
 import com.jme3.input.controls.MouseButtonTrigger;
+import com.jme3.math.Vector3f;
 import mygame.Main;
 
 /**
@@ -41,7 +42,7 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
         app.getInputManager().addMapping("Jump",
                 new KeyTrigger(KeyInput.KEY_SPACE));
         app.getInputManager().addMapping("Duck",
-                new KeyTrigger(KeyInput.KEY_RSHIFT));
+                new KeyTrigger(KeyInput.KEY_Z));
         app.getInputManager().addMapping("Lock View",
                 new KeyTrigger(KeyInput.KEY_LSHIFT));
         app.getInputManager().addMapping("GenTest",
@@ -161,7 +162,11 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
             if(app.getGameScreen()==1){
                 
                 if (value) {
-                   // app.getMainGameAppstate().getPhysicsCharacter().setDucked(true);
+                   if(app.getMainGameAppstate().isInGame()){
+                       app.getMainGameAppstate().cleanupLevel();
+                       app.getMainGameAppstate().getPhysicsCharacter().warp(new Vector3f(-5,8,6));
+                       app.getMainGameAppstate().setInShop(true);
+                   }
                 } else {
                     //app.getMainGameAppstate().getPhysicsCharacter().setDucked(false);
                 }
@@ -188,7 +193,12 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
         if(binding.equals("Shoot")){
             if (value) {
                 if(app.getGameScreen()==1){
-                    app.getMainGameAppstate().cleanWindow();
+                    if(app.getMainGameAppstate().isInGame()){
+                        app.getMainGameAppstate().cleanWindow();
+                    }else if(app.getMainGameAppstate().getInShop()){
+                        app.getMainGameAppstate().shop();
+                    }
+                    
 
                 }
                

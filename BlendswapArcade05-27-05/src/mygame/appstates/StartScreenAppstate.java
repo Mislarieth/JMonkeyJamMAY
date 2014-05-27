@@ -243,7 +243,7 @@ public class StartScreenAppstate extends AbstractAppState{
     }
       
       public final void createInfoWindow() {
-        Window nWin = new Window(screen, "Info", new Vector2f( screen.getWidth()-400, screen.getHeight()-700), new Vector2f(340, 400));
+        Window nWin = new Window(screen, "Info", new Vector2f( screen.getWidth()-400, screen.getHeight()-700), new Vector2f(340, 440));
         
         nWin.setWindowTitle("Instructions");
         nWin.setResizeN(false);
@@ -260,8 +260,11 @@ public class StartScreenAppstate extends AbstractAppState{
         InfoStr += "    S: Walk Backward\n";
         InfoStr += "    D: Rotate/Strafe Right\n";
         InfoStr += "    Space: Jump\n";
-        InfoStr += "    Enter: Restart Level\n";
-        InfoStr += "    Click: Clean Window\n";
+        InfoStr += "    Enter: Shift Level\n";
+        InfoStr += "    Click: Clean Window/Buy things\n";
+        InfoStr += "    C: Reset Level\n";
+        InfoStr += "    F: Use Jump Potion\n";
+        InfoStr += "    R: Go Invincible\n";
         nWin.setTextPosition(10, 30);
         nWin.setText(InfoStr);
         

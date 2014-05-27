@@ -35,6 +35,8 @@ public class Main extends SimpleApplication{
         AppSettings settings = new AppSettings(true);
         settings.setRenderer(AppSettings.LWJGL_OPENGL2);
         settings.setAudioRenderer(AppSettings.LWJGL_OPENAL);
+        app.setDisplayStatView(false);
+        app.setDisplayFps(false);
         app.setSettings(settings);
         app.start();
     }
@@ -176,6 +178,9 @@ public class Main extends SimpleApplication{
     }
     public void stopGame(){
         this.stop();
+    }
+    public AppSettings getSettings(){
+        return settings;
     }
     
 }
