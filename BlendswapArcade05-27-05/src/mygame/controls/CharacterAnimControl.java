@@ -67,7 +67,7 @@ public class CharacterAnimControl implements Control, AnimEventListener {
             enabled = true;
             torsoChannel = animControl.createChannel();
             feetChannel = animControl.createChannel();
-            System.out.println("MEOWMEOW");
+            //System.out.println("MEOWMEOW");
         }
         
     }

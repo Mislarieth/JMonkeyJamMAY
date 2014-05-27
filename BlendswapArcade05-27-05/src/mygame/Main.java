@@ -14,6 +14,7 @@ import mygame.appstates.CollisionDetector;
 import mygame.appstates.InputAppstate;
 import mygame.appstates.MainGame;
 import mygame.appstates.StartScreenAppstate;
+import tonegod.gui.core.Screen;
 
 /**
  * A walking physical character followed by a 3rd person camera. (No animation.)
@@ -34,20 +35,18 @@ public class Main extends SimpleApplication{
         AppSettings settings = new AppSettings(true);
         settings.setRenderer(AppSettings.LWJGL_OPENGL2);
         settings.setAudioRenderer(AppSettings.LWJGL_OPENAL);
+        app.setDisplayStatView(false);
+        app.setDisplayFps(false);
         app.setSettings(settings);
         app.start();
     }
 
     @Override
     public void simpleInitApp() {
-        //setup keyboard mapping
-        
-
-        
-        
         // activate physics
         bulletAppState = new BulletAppState();
         bulletAppState.setThreadingType(BulletAppState.ThreadingType.PARALLEL);
+        
         //bulletAppState.setBroadphaseType(PhysicsSpace.BroadphaseType.SIMPLE);
         
         stateManager.attach(bulletAppState);
@@ -103,7 +102,7 @@ public class Main extends SimpleApplication{
 
         });
     }
-    public void addRigidBodyModelAsset(final String fileLoc, final String name, final Vector3f loc, final float mass){
+    /*public void addRigidBodyModelAsset(final String fileLoc, final String name, final Vector3f loc, final float mass){
         enqueue(new Callable() {
 
             public Object call() throws Exception {
@@ -121,43 +120,7 @@ public class Main extends SimpleApplication{
 
 
         });
-    }
-    /*public void addCharacterModelAsset(final String fileLoc, final String name, final Vector3f localLoc, final Vector3f startPoint, final float scale){
-        enqueue(new Callable() {
-
-            public Object call() throws Exception {
-                try{
-                    Node characterNode = new Node(name);
-
-                   BetterCharacterControl physicsCharacter = new BetterCharacterControl(0.7f, 2f, 8f, characterNode);
-
-                    characterNode.addControl(physicsCharacter);
-                    
-                    
-
-
-                    // Load model, attach to character node
-                    Node model = (Node) getAssetManager().loadModel(fileLoc);
-                    model.setLocalScale(scale);
-                    model.setLocalTranslation(localLoc);
-                    characterNode.attachChild(model);
-                    CharacterAnimControl characterAnimControl = new CharacterAnimControl(model, physicsCharacter);
-                    characterNode.addControl(characterAnimControl);
-
-                    // Add character node to the rootNode
-                    rootNode.attachChild(characterNode);
-                    getPhysicsSpace().add(physicsCharacter);
-                    physicsCharacter.warp(startPoint);
-                }catch (NullPointerException e){
-                    System.out.println("Specified object does not exist");
-                }
-                return null;
-            }
-
-
-        });
     }*/
-    
 
 
     public PhysicsSpace getPhysicsSpace() {
@@ -182,12 +145,11 @@ public class Main extends SimpleApplication{
     
     //sets the appstate
     //used by external appstates at the destruction of itself
-    int gameScreen=0;
+    public int gameScreen=0;
     public void setScreenState(AbstractAppState state){
         if(state instanceof MainGame){
             if(gameScreen==0){
                 stateManager.detach(stateManager.getState(StartScreenAppstate.class));
-            
             }
             gameScreen = 1;
         }/*else if(state instanceof InGame){
@@ -202,7 +164,23 @@ public class Main extends SimpleApplication{
     public int getGameScreen() {
         return gameScreen;
     }
+    public void setFlycam(boolean enable){
+        flyCam.setEnabled(enable);
+    }
     
+    public void addGuiControl(Screen screen){
+        guiNode.addControl(screen);
+    }
     
+    public void startGame(Screen screen){
+        guiNode.removeControl(screen);
+        this.setScreenState(mainGameAppstate);
+    }
+    public void stopGame(){
+        this.stop();
+    }
+    public AppSettings getSettings(){
+        return settings;
+    }
     
 }

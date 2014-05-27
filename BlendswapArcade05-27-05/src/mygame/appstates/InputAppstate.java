@@ -5,9 +5,13 @@
 package mygame.appstates;
 
 import com.jme3.app.state.AbstractAppState;
+import com.jme3.app.state.AppStateManager;
 import com.jme3.input.KeyInput;
+import com.jme3.input.MouseInput;
 import com.jme3.input.controls.ActionListener;
 import com.jme3.input.controls.KeyTrigger;
+import com.jme3.input.controls.MouseButtonTrigger;
+import com.jme3.math.Vector3f;
 import mygame.Main;
 
 /**
@@ -24,115 +28,199 @@ public class InputAppstate extends AbstractAppState implements ActionListener {
     
     private void setupKeys() {
         app.getInputManager().addMapping("Strafe Left",
-                new KeyTrigger(KeyInput.KEY_U),
-                new KeyTrigger(KeyInput.KEY_Z));
+                new KeyTrigger(KeyInput.KEY_R));
         app.getInputManager().addMapping("Strafe Right",
-                new KeyTrigger(KeyInput.KEY_O),
-                new KeyTrigger(KeyInput.KEY_X));
+                new KeyTrigger(KeyInput.KEY_F));
         app.getInputManager().addMapping("Rotate Left",
-                new KeyTrigger(KeyInput.KEY_J),
-                new KeyTrigger(KeyInput.KEY_LEFT));
+                new KeyTrigger(KeyInput.KEY_A));
         app.getInputManager().addMapping("Rotate Right",
-                new KeyTrigger(KeyInput.KEY_L),
-                new KeyTrigger(KeyInput.KEY_RIGHT));
+                new KeyTrigger(KeyInput.KEY_D));
         app.getInputManager().addMapping("Walk Forward",
-                new KeyTrigger(KeyInput.KEY_I),
-                new KeyTrigger(KeyInput.KEY_UP));
+                new KeyTrigger(KeyInput.KEY_W));
         app.getInputManager().addMapping("Walk Backward",
-                new KeyTrigger(KeyInput.KEY_K),
-                new KeyTrigger(KeyInput.KEY_DOWN));
+                new KeyTrigger(KeyInput.KEY_S));
         app.getInputManager().addMapping("Jump",
-                new KeyTrigger(KeyInput.KEY_F),
                 new KeyTrigger(KeyInput.KEY_SPACE));
         app.getInputManager().addMapping("Duck",
-                new KeyTrigger(KeyInput.KEY_G),
-                new KeyTrigger(KeyInput.KEY_LSHIFT),
-                new KeyTrigger(KeyInput.KEY_RSHIFT));
+                new KeyTrigger(KeyInput.KEY_Z));
         app.getInputManager().addMapping("Lock View",
-                new KeyTrigger(KeyInput.KEY_RETURN));
+                new KeyTrigger(KeyInput.KEY_LSHIFT));
         app.getInputManager().addMapping("GenTest",
-                new KeyTrigger(KeyInput.KEY_V));
+                new KeyTrigger(KeyInput.KEY_C));
         app.getInputManager().addListener(this, "Strafe Left", "Strafe Right");
         app.getInputManager().addListener(this, "Rotate Left", "Rotate Right");
         app.getInputManager().addListener(this, "Walk Forward", "Walk Backward");
         app.getInputManager().addListener(this, "Jump", "Duck", "Lock View");
         app.getInputManager().addListener(this, "GenTest");
+        app.getInputManager().addMapping("Shoot", new MouseButtonTrigger(MouseInput.BUTTON_LEFT));
+        app.getInputManager().addListener(this, "Shoot");
     }
     public void onAction(String binding, boolean value, float tpf) {
         if (binding.equals("Strafe Left")) {
             if(app.getGameScreen()==1){
-                if (value) {
-                app.getMainGameAppstate().setLeftStrafe(true);
-            } else {
-                app.getMainGameAppstate().setLeftStrafe(false);
-            }
+                    if (value) {
+                        if(!app.getMainGameAppstate().isUseSammich()&&app.getMainGameAppstate().getNumSammiches()>0){
+                            app.getMainGameAppstate().setUseSammich(true);
+                            app.getMainGameAppstate().setNumSammiches(app.getMainGameAppstate().getNumSammiches()-1);
+                            System.out.println(app.getMainGameAppstate().getNumSammiches());
+                        }
+                    } else {
+                        //app.getMainGameAppstate().setLeftStrafe(false);
+                    }
             }
             
         } else if (binding.equals("Strafe Right")) {
             if(app.getGameScreen()==1){
                 if (value) {
-                    app.getMainGameAppstate().setRightStrafe(true);
+                    if(!app.getMainGameAppstate().isUsePot()&&app.getMainGameAppstate().getNumPots()>0){
+                        app.getMainGameAppstate().setUsePot(true);
+                        app.getMainGameAppstate().setNumPots(app.getMainGameAppstate().getNumPots()-1);
+                        System.out.println(app.getMainGameAppstate().getNumPots());
+                    }
                 } else {
-                    app.getMainGameAppstate().setRightStrafe(false);
+                    //app.getMainGameAppstate().setRightStrafe(false);
                 }
             }
         } else if (binding.equals("Rotate Left")) {
             if(app.getGameScreen()==1){
-                if (value) {
-                    app.getMainGameAppstate().setLeftRotate(true);
-                } else {
+                if(app.getStateManager().getState(MainGame.class).getLevel()==0){
+                    app.getMainGameAppstate().setLeftStrafe(false);
+                    if (value) {
+                        app.getMainGameAppstate().setLeftRotate(true);
+                    } else {
+                        app.getMainGameAppstate().setLeftRotate(false);
+                    }
+                }else{
                     app.getMainGameAppstate().setLeftRotate(false);
+                    if (value) {
+                        app.getMainGameAppstate().setLeftStrafe(true);
+                    } else {
+                        app.getMainGameAppstate().setLeftStrafe(false);
+                    }
                 }
             }
         } else if (binding.equals("Rotate Right")) {
             if(app.getGameScreen()==1){
-                if (value) {
-                    app.getMainGameAppstate().setRightRotate(true);
-                } else {
+                if(app.getStateManager().getState(MainGame.class).getLevel()==0){
+                    app.getMainGameAppstate().setRightStrafe(false);
+                    if (value) {
+                        app.getMainGameAppstate().setRightRotate(true);
+                    } else {
+                        app.getMainGameAppstate().setRightRotate(false);
+                    }
+                }else{
                     app.getMainGameAppstate().setRightRotate(false);
+                    if (value) {
+                        app.getMainGameAppstate().setRightStrafe(true);
+                    } else {
+                        app.getMainGameAppstate().setRightStrafe(false);
+                    }
                 }
             }
         } else if (binding.equals("Walk Forward")) {
             if(app.getGameScreen()==1){
-                if (value) {
-                    app.getMainGameAppstate().setForward(true);
-                } else {
+                if(app.getStateManager().getState(MainGame.class).getLevel()==0){
+                    if (value) {
+                        app.getMainGameAppstate().setForward(true);
+                        if(app.getStateManager().getState(MainGame.class).getLevel()!=0){
+                            app.getMainGameAppstate().setForward(false);
+                        }
+                    } else {
+                        app.getMainGameAppstate().setForward(false);
+                    }
+                }else{
                     app.getMainGameAppstate().setForward(false);
                 }
             }
         } else if (binding.equals("Walk Backward")) {
             if(app.getGameScreen()==1){
-                if (value) {
-                    app.getMainGameAppstate().setBackward(true);
-                } else {
+                if(app.getStateManager().getState(MainGame.class).getLevel()==0){
+                    if (value) {
+                        app.getMainGameAppstate().setBackward(true);
+                        if(app.getStateManager().getState(MainGame.class).getLevel()!=0){
+                            app.getMainGameAppstate().setBackward(false);
+                        }
+                    } else {
+                        app.getMainGameAppstate().setBackward(false);
+                    }
+                }else{
                     app.getMainGameAppstate().setBackward(false);
                 }
             }
         } else if (binding.equals("Jump")) {
             if(app.getGameScreen()==1){
-               app.getMainGameAppstate().getPhysicsCharacter().jump();
+                if (value) {
+                    app.getMainGameAppstate().getPhysicsCharacter().jump();
+                } else {
+                    //app.getMainGameAppstate().setBackward(false);
+                }
+               
             }else if(app.getGameScreen()==0){
-                app.setScreenState(app.getMainGameAppstate());
+                //app.setScreenState(app.getMainGameAppstate());
             }
         } else if (binding.equals("Duck")) {
             if(app.getGameScreen()==1){
                 
                 if (value) {
-                    app.getMainGameAppstate().getPhysicsCharacter().setDucked(true);
+                   if(app.getMainGameAppstate().isInGame()){
+                       app.getMainGameAppstate().cleanupLevel();
+                       app.getMainGameAppstate().getPhysicsCharacter().warp(new Vector3f(-5,8,6));
+                       app.getMainGameAppstate().setInShop(true);
+                   }
                 } else {
-                    app.getMainGameAppstate().getPhysicsCharacter().setDucked(false);
+                    //app.getMainGameAppstate().getPhysicsCharacter().setDucked(false);
                 }
             }
         }else if (binding.equals("GenTest")) {
             if(app.getGameScreen()==1){
                 if (value) {
-                    app.getMainGameAppstate().generateSide(1,10,10,4);
+                    if(app.getMainGameAppstate().getLevel()!=0){
+                        app.getMainGameAppstate().generateSide(app.getMainGameAppstate().getLevel(),10,10,4);
+                    }
+                    
                 } else {
 
                 }
             }
             
+        }else if (binding.equals("Lock View")) {
+            if(app.getGameScreen()==1){
+                app.getStateManager().getState(MainGame.class).setLives(0);
+                  
+            }
+            
+        } 
+        if(binding.equals("Shoot")){
+            if (value) {
+                if(app.getGameScreen()==1){
+                    if(app.getMainGameAppstate().isInGame()){
+                        app.getMainGameAppstate().cleanWindow();
+                    }else if(app.getMainGameAppstate().getInShop()){
+                        app.getMainGameAppstate().shop();
+                    }
+                    
+
+                }
+               
+            } else {
+
+            }
         }
     }
+    
+    @Override
+      public void stateDetached(AppStateManager stateManager) {
+            app.getInputManager().removeListener(this);
+            app.getInputManager().deleteMapping("Strafe Left");
+            app.getInputManager().deleteMapping("Strafe Right");
+            app.getInputManager().deleteMapping("Rotate Left");
+            app.getInputManager().deleteMapping("Rotate Right");
+            app.getInputManager().deleteMapping("Walk Forward");
+            app.getInputManager().deleteMapping("Walk Backward");
+            app.getInputManager().deleteMapping("Jump");
+            app.getInputManager().deleteMapping("Duck");
+            app.getInputManager().deleteMapping("Lock View");
+            app.getInputManager().deleteMapping("GenTest");
+      }
     
 }

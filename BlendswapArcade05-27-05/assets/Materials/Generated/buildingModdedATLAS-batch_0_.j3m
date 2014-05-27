@@ -1,0 +1,26 @@
+Material MyMaterial : Common/MatDefs/Light/Lighting.j3md {
+    MaterialParameters {
+        DiffuseMap : Flip Repeat Models/buildingModdedATLAS/textures/TextureAtlas.png
+        Minnaert : false
+        Specular : 1.0 1.0 1.0 1.0
+        Diffuse : 1.0 1.0 1.0 1.0
+        UseMaterialColors : true
+        ParallaxHeight : 0.05
+        NormalMap : Models/buildingModdedATLAS/textures/buildingModdedATLAS-batch_0_-NormalMap.png
+        Ambient : 0.0 0.0 0.0 1.0
+        Shininess : 1.0
+        WardIso : false
+        LightMap : Flip Models/buildingModdedATLAS/textures/TextureAtlasAmbientOcclusion.png
+    }
+    AdditionalRenderState {
+      FaceCull Back
+      Wireframe Off
+      DepthWrite On
+      PolyOffset 0.0 0.0
+      AlphaTestFalloff 0.0
+      Blend Off
+      PointSprite Off
+      ColorWrite On
+      DepthTest On
+    }
+}
